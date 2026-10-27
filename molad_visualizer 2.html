@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Molad Visualizer</title>
+<style>
+:root {
+  color-scheme: dark;
+  font-family: Arial,sans-serif;
+  background: #0c1424;
+  color: #e9f0ff;
+}
+* { box-sizing: border-box; }
+body { margin: 0; }
+
+.views {
+  display: flex;
+  min-height: calc(100vh - 172px);
+}
+.view {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  border-right: 1px solid #35425c;
+  background: radial-gradient(ellipse at center,#172743,#0a1120 75%);
+}
+.view.hidden { display: none; }
+
+.heading {
+  position: absolute;
+  top: 13px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  pointer-events: none;
+  z-index: 2;
+  font-size: 20px;
+  font-weight: bold;
+}
+.heading small {
+  display: block;
+  font-size: 12px;
+  color: #9aaed1;
+  font-weight: normal;
+  margin-top: 3px;
+}
+.view canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.controls {
+  background: #172238;
+  border-top: 1px solid #3a4b69;
+  padding: 13px 18px;
+  min-height: 172px;
+}
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 5px 0 12px;
+}
+button {
+  border: 1px solid #536b94;
+  background: #263958;
+  color: #fff;
+  padding: 8px 13px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 14px;
+}
+button:hover { background: #39547d; }
+button.active {
+  background: #426da7;
+  border-color: #9dc1ff;
+}
+input[type=range] {
+  width: 170px;
+  accent-color: #88b9ff;
+}
+.counter {
+  font-variant-numeric: tabular-nums;
+  font-size: 15px;
+  color: #dbeaff;
+}
+.hint {
+  color: #9baccc;
+  font-size: 12px;
+  text-align: center;
+}
+.badge {
+  color: #ffdf91;
+  font-size: 13px;
+  min-width: 120px;
+  text-align: center;
+}
+.viewtoggles { gap: 8px; }
+.viewtoggles button {
+  font-size: 12px;
+  padding: 6px 10px;
+}
+@media(max-width:650px) {
+  .views { min-height: calc(100vh - 215px); }
+  .heading { font-size: 15px; }
+  .controls { min-height: 215px; padding: 8px; }
+  .row { gap: 7px; }
+}
+</style>
+</head>
+<body>
+
+<main class="views">
+  <section class="view" id="left">
+    <div class="heading">
+      Sun Centered View
+      <small>Heliocentric</small>
+    </div>
+    <canvas id="heliocentric"></canvas>
+  </section>
+
+  <section class="view" id="right">
+    <div class="heading">
+      Earth Centered View
+      <small>Geocentric</small>
+    </div>
+    <canvas id="geocentric"></canvas>
+  </section>
+</main>
+
+<footer class="controls">
+  <div class="row viewtoggles">
+    <button id="both" class="active">Both Views</button>
+    <button id="onlyLeft">Sun Centered Only</button>
+    <button id="onlyRight">Earth Centered Only</button>
+  </div>
+
+  <div class="row">
+    <button id="reverse" title="Play backwards">◀ Reverse</button>
+    <button id="pause" class="active">Ⅱ Pause</button>
+    <button id="forward">▶ Play</button>
+    <button id="reset">↺ Reset</button>
+    <label for="speed">Speed</label>
+    <input id="speed" type="range" min="0" max="100" value="45">
+    <span id="speedText">1.0 days/sec</span>
+  </div>
+
+  <div class="row">
+    <span class="counter" id="clock">Day 0 · 00:00</span>
+    <span class="badge" id="molad">● Molad</span>
+  </div>
+
+  <div class="hint">
+    Dashed orbits · 30 lunar divisions
+    (every fifth emphasized, fifteenth strongest) ·
+    Simplified circular motions ·
+    Time measured from initial conjunction
+  </div>
+</footer>
+
+<script>
+(() => {
+  const TAU = Math.PI * 2;
+  const year = 365.25;
+  const synodic = 29.530588;
+  const moonPeriod = 1 / (1 / synodic + 1 / year);
+
+  const L = document.getElementById('left');
+  const R = document.getElementById('right');
+
+  const canvases = [
+    document.getElementById('heliocentric'),
+    document.getElementById('geocentric')
+  ];
+
+  let day = 0;
+  let direction = 0;
+  let last = 0;
+
+  const viewZoom = canvases.map(() => ({
+    zoom: 1,
+    ox: 0,
+    oy: 0
+  }));
+
+  const $ = id => document.getElementById(id);
+
+  function size(c) {
+    let r = c.getBoundingClientRect();
+    let d = window.devicePixelRatio || 1;
+    let w = Math.max(1, Math.round(r.width * d));
+    let h = Math.max(1, Math.round(r.height * d));
+
+    if (c.width !== w || c.height !== h) {
+      c.width = w;
+      c.height = h;
+    }
+
+    let ctx = c.getContext('2d');
+    ctx.setTransform(d, 0, 0, d, 0, 0);
+
+    return { ctx, w: r.width, h: r.height };
+  }
+
+  function circle(ctx, x, y, r, fill, glow = 0) {
+    ctx.save();
+
+    if (glow) {
+      ctx.shadowColor = fill;
+      ctx.shadowBlur = glow;
+    }
+
+    ctx.fillStyle = fill;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, TAU);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function ring(ctx, x, y, r,
+                color = '#7185a5',
+                width = 1.3,
+                dash = [5, 7]) {
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.setLineDash(dash);
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, TAU);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function line(ctx, x, y, x2, y2,
+                color, width = 1.5, glow = 0) {
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+
+    if (glow) {
+      ctx.shadowBlur = glow;
+      ctx.shadowColor = color;
+    }
+
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function body(ctx, x, y, kind, r) {
+    if (kind === 'sun') {
+      circle(ctx, x, y, r * 1.5, '#fbbf4a', 19);
+      circle(ctx, x, y, r, '#ffdb63', 13);
+      circle(ctx, x-r*.22, y-r*.24, r*.47, '#fff0a1');
+    }
+    else if (kind === 'earth') {
+      circle(ctx, x, y, r, '#398fd5', 7);
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, TAU);
+      ctx.clip();
+      ctx.fillStyle = '#66c38d';
+      ctx.beginPath();
+
+      ctx.ellipse(
+        x-r*.2, y-r*.3,
+        r*.43, r*.28, -.7, 0, TAU
+      );
+      ctx.ellipse(
+        x+r*.4, y+r*.32,
+        r*.35, r*.3, .4, 0, TAU
+      );
+
+      ctx.fill();
+      ctx.restore();
+    }
+    else {
+      circle(ctx, x, y, r, '#cbd3dc', 4);
+      circle(ctx, x-r*.25, y-r*.22, r*.22, '#99a4b4');
+      circle(ctx, x+r*.28, y+r*.18, r*.16, '#a5afbd');
+    }
+  }
+
+  function lunarTicks(ctx, x, y, r) {
+    for (let i = 0; i < 30; i++) {
+      let a = TAU * i / 30;
+      let strong = i % 15 === 0;
+      let med = i % 5 === 0;
+
+      let inner = r + (strong ? -10 : med ? -7 : -4);
+      let outer = r + (strong ? 10 : med ? 7 : 4);
+
+      line(
+        ctx,
+        x + Math.cos(a) * inner,
+        y + Math.sin(a) * inner,
+        x + Math.cos(a) * outer,
+        y + Math.sin(a) * outer,
+        strong ? '#dceaff' :
+          med ? '#a8bbda' : '#637894',
+        strong ? 2.2 : med ? 1.7 : 1
+      );
+    }
+  }
+
+  function draw(c, geo) {
+    if (c.closest('.hidden')) return;
+
+    const { ctx, w, h } = size(c);
+    ctx.clearRect(0, 0, w, h);
+
+    const z = viewZoom[geo ? 1 : 0];
+
+    ctx.save();
+    ctx.translate(z.ox, z.oy);
+    ctx.scale(z.zoom, z.zoom);
+
+    let cx = w / 2;
+    let cy = h / 2 + 15;
+
+    let scale = Math.min(w * .43, (h - 85) * .43);
+    scale = Math.max(10, scale);
+
+    let re = scale * .72;
+    let rm = scale * .22;
+
+    let a = TAU * day / year;
+    let b = Math.PI + TAU * day / moonPeriod;
+
+    let ex = re * Math.cos(a);
+    let ey = -re * Math.sin(a);
+    let mx = rm * Math.cos(b);
+    let my = -rm * Math.sin(b);
+
+    // Molad: Moon lies on the Sun-facing side of Earth.
+    let phase = ((b - a) % TAU + TAU) % TAU;
+    let deviation = Math.atan2(
+      Math.sin(phase),
+      Math.cos(phase)
+    );
+
+    let isMolad =
+      Math.abs(Math.abs(deviation) - Math.PI) < .035;
+
+    let sun, earth, moon;
+
+    if (!geo) {
+      sun = [cx, cy];
+      earth = [cx + ex, cy + ey];
+      moon = [earth[0] + mx, earth[1] + my];
+
+      ring(ctx, cx, cy, re);
+      ring(ctx, ...earth, rm);
+      lunarTicks(ctx, ...earth, rm);
+    }
+    else {
+      earth = [cx, cy];
+      sun = [cx - ex, cy - ey];
+      moon = [cx + mx, cy + my];
+
+      ring(ctx, cx, cy, re);
+      ring(ctx, cx, cy, rm);
+      lunarTicks(ctx, cx, cy, rm);
+    }
+
+    line(
+      ctx,
+      ...earth,
+      ...sun,
+      isMolad ? '#ffe77c' : '#c29d64',
+      isMolad ? 3.4 : 1.4,
+      isMolad ? 19 : 0
+    );
+
+    body(
+      ctx, ...sun, 'sun',
+      Math.max(7, Math.min(15, scale * .085))
+    );
+
+    body(
+      ctx, ...earth, 'earth',
+      Math.max(5, Math.min(11, scale * .06))
+    );
+
+    body(
+      ctx, ...moon, 'moon',
+      Math.max(3.8, Math.min(7, scale * .037))
+    );
+
+    ctx.font = '12px Arial';
+    ctx.fillStyle = '#c3d4ef';
+    ctx.textAlign = 'center';
+
+    ctx.fillText(
+      'Sun', sun[0],
+      sun[1] + Math.max(7, Math.min(15, scale*.085)) + 17
+    );
+
+    ctx.fillText(
+      'Earth', earth[0],
+      earth[1] + Math.max(5, Math.min(11, scale*.06)) + 17
+    );
+
+    ctx.fillText('Moon', moon[0], moon[1] - 13);
+
+    ctx.restore();
+
+    return isMolad;
+  }
+
+  function render() {
+    let m1 = draw(canvases[0], false);
+    let m2 = draw(canvases[1], true);
+
+    let d = Math.floor(day);
+    let hours = Math.round((day - d) * 24);
+
+    if (hours === 24) {
+      d++;
+      hours = 0;
+    }
+
+    $('clock').textContent =
+      `Day ${d} · ${String(hours).padStart(2, '0')}:00`;
+
+    $('molad').textContent =
+      (m1 || m2) ? '● Molad' : ' ';
+  }
+
+  function speed() {
+    let n = +$('speed').value;
+
+    return n === 0
+      ? 0
+      : Math.pow(10, (n - 45) / 32);
+  }
+
+  function updateSpeed() {
+    $('speedText').textContent =
+      speed().toFixed(2) + ' days/sec';
+  }
+
+  function buttons() {
+    $('forward').classList.toggle(
+      'active', direction === 1
+    );
+    $('reverse').classList.toggle(
+      'active', direction === -1
+    );
+    $('pause').classList.toggle(
+      'active', direction === 0
+    );
+  }
+
+  $('forward').onclick = () => {
+    direction = 1;
+    buttons();
+  };
+
+  $('reverse').onclick = () => {
+    direction = -1;
+    buttons();
+  };
+
+  $('pause').onclick = () => {
+    direction = 0;
+    buttons();
+  };
+
+  $('reset').onclick = () => {
+    day = 0;
+    direction = 0;
+    buttons();
+    render();
+  };
+
+  $('speed').oninput = updateSpeed;
+
+  function show(which) {
+    L.classList.toggle('hidden', which === 'right');
+    R.classList.toggle('hidden', which === 'left');
+
+    $('both').classList.toggle(
+      'active', which === 'both'
+    );
+    $('onlyLeft').classList.toggle(
+      'active', which === 'left'
+    );
+    $('onlyRight').classList.toggle(
+      'active', which === 'right'
+    );
+
+    render();
+  }
+
+  $('both').onclick = () => show('both');
+  $('onlyLeft').onclick = () => show('left');
+  $('onlyRight').onclick = () => show('right');
+
+  // Independent cursor-centered mouse-wheel zoom.
+  canvases.forEach((c, i) => {
+    c.addEventListener('wheel', e => {
+      e.preventDefault();
+
+      const rect = c.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      const z = viewZoom[i];
+
+      const factor = Math.exp(-e.deltaY * .0015);
+
+      const newZoom = Math.max(
+        .3,
+        Math.min(12, z.zoom * factor)
+      );
+
+      const ratio = newZoom / z.zoom;
+
+      z.ox = x - (x - z.ox) * ratio;
+      z.oy = y - (y - z.oy) * ratio;
+      z.zoom = newZoom;
+
+      render();
+    }, { passive: false });
+  });
+
+  function frame(t) {
+    if (last && direction) {
+      day += direction * speed() *
+        Math.min(.08, (t - last) / 1000);
+    }
+
+    last = t;
+    render();
+    requestAnimationFrame(frame);
+  }
+
+  updateSpeed();
+  buttons();
+  requestAnimationFrame(frame);
+
+  window.addEventListener('resize', render);
+})();
+</script>
+</body>
+</html>
