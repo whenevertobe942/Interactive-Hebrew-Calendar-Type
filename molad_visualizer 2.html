@@ -110,6 +110,14 @@ input[type=range] {
   .controls { min-height: 215px; padding: 8px; }
   .row { gap: 7px; }
 }
+
+#trainToggle {border-color:#b8a0e9;background:#40325d}
+#trainWindow {position:fixed;right:22px;top:80px;width:min(440px,calc(100vw - 24px));height:390px;background:#101c30;border:1px solid #8296bc;border-radius:12px;box-shadow:0 16px 55px #000b;z-index:20;overflow:hidden;display:none}
+#trainWindow.open {display:flex;flex-direction:column}
+#trainHeader {background:#263957;padding:9px 12px;display:flex;justify-content:space-between;align-items:center;cursor:move;user-select:none;font-weight:bold;font-size:14px}
+#trainClose {padding:2px 9px}
+#trainCanvas {width:100%;flex:1;min-height:0}
+#trainNote {font-size:11px;text-align:center;color:#b6c6e0;padding:6px}
 </style>
 </head>
 <body>
@@ -134,19 +142,34 @@ input[type=range] {
 
 <footer class="controls">
   <div class="row viewtoggles">
+    <button id="trainToggle">Show Bottle &amp; Train</button>
     <button id="both" class="active">Both Views</button>
     <button id="onlyLeft">Sun Centered Only</button>
     <button id="onlyRight">Earth Centered Only</button>
   </div>
 
   <div class="row">
+    <button id="stepBack" title="Step backward by the speed slider’s numerical value (in days)">|◀ Step</button>
     <button id="reverse" title="Play backwards">◀ Reverse</button>
     <button id="pause" class="active">Ⅱ Pause</button>
     <button id="forward">▶ Play</button>
+    <button id="stepForward" title="Step forward by the speed slider’s numerical value (in days)">Step ▶|</button>
     <button id="reset">↺ Reset</button>
     <label for="speed">Speed</label>
     <input id="speed" type="range" min="0" max="100" value="45">
     <span id="speedText">1.0 days/sec</span>
+  </div>
+
+  <div class="row">
+    <label for="cameraAngle">Camera angle</label>
+    <input id="cameraAngle" type="range" min="0" max="90" value="32" step="1">
+    <span id="cameraText">32°</span>
+    <label for="orbitTilt">Moon orbit tilt</label>
+    <input id="orbitTilt" type="range" min="0" max="30" value="5.15" step="0.05">
+    <span id="tiltText">5.15°</span>
+    <label for="nodeSpeed">Orbit rotation</label>
+    <input id="nodeSpeed" type="range" min="0" max="1000" value="50" step="1">
+    <span id="nodeText">18.6 years/cycle</span>
   </div>
 
   <div class="row">
@@ -157,11 +180,16 @@ input[type=range] {
   <div class="hint">
     Dashed orbits · 30 lunar divisions
     (every fifth emphasized, fifteenth strongest) ·
-    Simplified circular motions ·
-    Time measured from initial conjunction
+    Simplified circular motions · Inclined lunar orbit with clockwise nodal precession ·
+    Camera 90° = overhead; 0° = edge-on · Time measured from initial conjunction
   </div>
 </footer>
 
+<aside id="trainWindow" aria-label="Bottle and train model">
+  <div id="trainHeader"><span>Bottle &amp; Train · Linked Moon Orbit</span><button id="trainClose" title="Close">✕</button></div>
+  <canvas id="trainCanvas"></canvas>
+  <div id="trainNote">Clockwise bottle and orbital plane · Counterclockwise train · Shared tilt and camera</div>
+</aside>
 <script>
 (() => {
   const TAU = Math.PI * 2;
@@ -288,9 +316,9 @@ input[type=range] {
     }
   }
 
-  function lunarTicks(ctx, x, y, r) {
+  function lunarTicks(ctx, x, y, r, rotation = 0) {
     for (let i = 0; i < 30; i++) {
-      let a = TAU * i / 30;
+      let a = TAU * i / 30 + rotation;
       let strong = i % 15 === 0;
       let med = i % 5 === 0;
 
@@ -310,109 +338,141 @@ input[type=range] {
     }
   }
 
+  // World coordinates: XY is the ecliptic; positive Z is above it.
+  // The lunar orbital plane is tilted around its moving line of nodes.
   function draw(c, geo) {
     if (c.closest('.hidden')) return;
 
     const { ctx, w, h } = size(c);
     ctx.clearRect(0, 0, w, h);
-
     const z = viewZoom[geo ? 1 : 0];
-
     ctx.save();
     ctx.translate(z.ox, z.oy);
     ctx.scale(z.zoom, z.zoom);
 
-    let cx = w / 2;
-    let cy = h / 2 + 15;
+    const cx = w / 2;
+    const cy = h / 2 + 15;
+    const scale = Math.max(10, Math.min(w * .43, (h - 85) * .43));
+    const re = scale * .72;
+    const rm = scale * .22;
+    const elevation = +$('cameraAngle').value * Math.PI / 180;
+    const inclination = +$('orbitTilt').value * Math.PI / 180;
+    // Slider center = real ~18.6-year retrograde node cycle.
+    // 0 freezes the nodes; higher values accelerate clockwise precession.
+    const multiplier = +$('nodeSpeed').value / 50;
+    const nodePeriod = multiplier ? 18.6 * year / multiplier : Infinity;
+    const node = .65 - TAU * day / nodePeriod;
+    const a = TAU * day / year;
+    const b = Math.PI + TAU * day / moonPeriod;
+    const ex = re * Math.cos(a);
+    const ey = re * Math.sin(a);
 
-    let scale = Math.min(w * .43, (h - 85) * .43);
-    scale = Math.max(10, scale);
-
-    let re = scale * .72;
-    let rm = scale * .22;
-
-    let a = TAU * day / year;
-    let b = Math.PI + TAU * day / moonPeriod;
-
-    let ex = re * Math.cos(a);
-    let ey = -re * Math.sin(a);
-    let mx = rm * Math.cos(b);
-    let my = -rm * Math.sin(b);
-
-    // Molad: Moon lies on the Sun-facing side of Earth.
-    let phase = ((b - a) % TAU + TAU) % TAU;
-    let deviation = Math.atan2(
-      Math.sin(phase),
-      Math.cos(phase)
-    );
-
-    let isMolad =
-      Math.abs(Math.abs(deviation) - Math.PI) < .035;
-
-    let sun, earth, moon;
-
-    if (!geo) {
-      sun = [cx, cy];
-      earth = [cx + ex, cy + ey];
-      moon = [earth[0] + mx, earth[1] + my];
-
-      ring(ctx, cx, cy, re);
-      ring(ctx, ...earth, rm);
-      lunarTicks(ctx, ...earth, rm);
+    // Tilted circular orbit: position angle is corrected for the tilt,
+    // so its projection in the ecliptic advances CCW at the lunar rate.
+    function lunarPoint(angle) {
+      const u = angle - node;
+      const along = rm * Math.cos(u);
+      const across = rm * Math.sin(u);
+      return [
+        along * Math.cos(node) - across * Math.cos(inclination) * Math.sin(node),
+        along * Math.sin(node) + across * Math.cos(inclination) * Math.cos(node),
+        across * Math.sin(inclination)
+      ];
     }
-    else {
-      earth = [cx, cy];
-      sun = [cx - ex, cy - ey];
-      moon = [cx + mx, cy + my];
+    const lunar = lunarPoint(b);
+    const earthWorld = geo ? [0,0,0] : [ex,ey,0];
+    const sunWorld = geo ? [-ex,-ey,0] : [0,0,0];
+    const moonWorld = earthWorld.map((v,i) => v + lunar[i]);
 
-      ring(ctx, cx, cy, re);
-      ring(ctx, cx, cy, rm);
-      lunarTicks(ctx, cx, cy, rm);
+    function project(p) {
+      return [cx + p[0], cy - p[1]*Math.sin(elevation) - p[2]*Math.cos(elevation)];
+    }
+    function drawOrbit(points, color, dash=[5,7], width=1.3) {
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.setLineDash(dash);
+      ctx.beginPath();
+      points.forEach((p,i) => {
+        const q=project(p);
+        if (i===0) ctx.moveTo(...q); else ctx.lineTo(...q);
+      });
+      ctx.closePath();
+      ctx.stroke();
+      ctx.restore();
+    }
+    const eclipticOrbit = [];
+    const moonOrbit = [];
+    for(let i=0;i<180;i++) {
+      const t=TAU*i/180;
+      eclipticOrbit.push(geo ? [re*Math.cos(t),re*Math.sin(t),0]
+                               : [re*Math.cos(t),re*Math.sin(t),0]);
+      const v=lunarPoint(t);
+      moonOrbit.push(earthWorld.map((q,j)=>q+v[j]));
+    }
+    drawOrbit(eclipticOrbit, '#7185a5');
+    // Faint ecliptic-plane reference at the Moon's distance.
+    drawOrbit(Array.from({length:180},(_,i)=> {
+      const t=TAU*i/180;
+      return [earthWorld[0]+rm*Math.cos(t),earthWorld[1]+rm*Math.sin(t),0];
+    }), '#445c80', [2,8], 1);
+    drawOrbit(moonOrbit, '#b4c7e8', [5,6], 1.5);
+
+    // Tick zero points toward the Sun, as in the previous 2-D version.
+    const sunAngle = a + Math.PI;
+    for (let i=0;i<30;i++) {
+      const t=sunAngle+TAU*i/30;
+      const strong=i%15===0, med=i%5===0;
+      const delta=strong?10:med?7:4;
+      const v=lunarPoint(t);
+      const norm=Math.hypot(...v);
+      const p1=project(earthWorld.map((q,j)=>q+v[j]*(rm-delta)/norm));
+      const p2=project(earthWorld.map((q,j)=>q+v[j]*(rm+delta)/norm));
+      line(ctx,...p1,...p2,strong?'#dceaff':med?'#a8bbda':'#637894',strong?2.2:med?1.7:1);
     }
 
-    line(
-      ctx,
-      ...earth,
-      ...sun,
-      isMolad ? '#ffe77c' : '#c29d64',
-      isMolad ? 3.4 : 1.4,
-      isMolad ? 19 : 0
-    );
+    // Vertical separation at the Sun-facing point of the lunar orbit.
+    const nearPoint = lunarPoint(sunAngle);
+    const nearTop = earthWorld.map((v,i) => v + nearPoint[i]);
+    const nearBase = [nearTop[0], nearTop[1], 0];
+    line(ctx, ...project(nearBase), ...project(nearTop), '#ff4141', 2.5);
 
-    body(
-      ctx, ...sun, 'sun',
-      Math.max(7, Math.min(15, scale * .085))
-    );
+    const phase = Math.atan2(Math.sin(b-sunAngle),Math.cos(b-sunAngle));
+    const isMolad = Math.abs(phase)<.035;
+    // A conjunction is an eclipse only near a node (Moon nearly at Z=0).
+    const isEclipse = isMolad && Math.abs(lunarPoint(sunAngle)[2]) < rm*.22;
+    const sun=project(sunWorld), earth=project(earthWorld), moon=project(moonWorld);
+    line(ctx,...earth,...sun,
+      isEclipse?'#ff9b77':isMolad?'#ffe77c':'#c29d64',
+      isMolad?3.4:1.4,isMolad?19:0);
 
-    body(
-      ctx, ...earth, 'earth',
-      Math.max(5, Math.min(11, scale * .06))
-    );
-
-    body(
-      ctx, ...moon, 'moon',
-      Math.max(3.8, Math.min(7, scale * .037))
-    );
-
-    ctx.font = '12px Arial';
-    ctx.fillStyle = '#c3d4ef';
-    ctx.textAlign = 'center';
-
-    ctx.fillText(
-      'Sun', sun[0],
-      sun[1] + Math.max(7, Math.min(15, scale*.085)) + 17
-    );
-
-    ctx.fillText(
-      'Earth', earth[0],
-      earth[1] + Math.max(5, Math.min(11, scale*.06)) + 17
-    );
-
-    ctx.fillText('Moon', moon[0], moon[1] - 13);
-
+    // Draw bodies back-to-front. Their opaque disks cover farther objects and lines.
+    // Camera-facing depth is Y*cos(elevation) - Z*sin(elevation).
+    const bodies = [
+      {p:sunWorld, xy:sun, kind:'sun', r:Math.max(7,Math.min(15,scale*.085))},
+      {p:earthWorld,xy:earth,kind:'earth',r:Math.max(5,Math.min(11,scale*.06))},
+      {p:moonWorld,xy:moon,kind:'moon',r:Math.max(3.8,Math.min(7,scale*.037))}
+    ];
+    bodies.sort((x,y)=> (x.p[1]*Math.cos(elevation)-x.p[2]*Math.sin(elevation))
+                       -(y.p[1]*Math.cos(elevation)-y.p[2]*Math.sin(elevation)));
+    for(const obj of bodies) {
+      // An opaque backing also masks orbital strokes and distant objects.
+      circle(ctx, ...obj.xy, obj.r + .3, '#0c1424');
+      body(ctx,...obj.xy,obj.kind,obj.r);
+    }
+    ctx.font='12px Arial';
+    ctx.fillStyle='#c3d4ef';
+    ctx.textAlign='center';
+    ctx.fillText('Sun',sun[0],sun[1]+Math.max(7,Math.min(15,scale*.085))+17);
+    ctx.fillText('Earth',earth[0],earth[1]+Math.max(5,Math.min(11,scale*.06))+17);
+    ctx.fillText('Moon',moon[0],moon[1]-13);
+    if(isEclipse) {
+      ctx.font='bold 15px Arial';
+      ctx.fillStyle='#ffad83';
+      ctx.fillText('SOLAR ECLIPSE',cx,cy-scale*.94);
+    }
     ctx.restore();
-
-    return isMolad;
+    return isEclipse ? 2 : isMolad ? 1 : 0;
   }
 
   function render() {
@@ -430,8 +490,9 @@ input[type=range] {
     $('clock').textContent =
       `Day ${d} · ${String(hours).padStart(2, '0')}:00`;
 
+    drawTrain();
     $('molad').textContent =
-      (m1 || m2) ? '● Molad' : ' ';
+      (m1 === 2 || m2 === 2) ? '● Solar eclipse!' : (m1 || m2) ? '● Molad' : ' ';
   }
 
   function speed() {
@@ -474,6 +535,10 @@ input[type=range] {
     buttons();
   };
 
+  // Single-step works whether paused or playing; the slider sets days per click.
+  $('stepBack').onclick = () => { day -= speed(); render(); };
+  $('stepForward').onclick = () => { day += speed(); render(); };
+
   $('reset').onclick = () => {
     day = 0;
     direction = 0;
@@ -482,6 +547,15 @@ input[type=range] {
   };
 
   $('speed').oninput = updateSpeed;
+  function update3DControls() {
+    $('cameraText').textContent = $('cameraAngle').value + '°';
+    $('tiltText').textContent = (+$('orbitTilt').value).toFixed(2) + '°';
+    const rate = +$('nodeSpeed').value / 50;
+    $('nodeText').textContent = rate ? (18.6 / rate).toFixed(1) + ' years/cycle' : 'Stopped';
+    render();
+  }
+  ['cameraAngle','orbitTilt','nodeSpeed'].forEach(id => $(id).oninput = update3DControls);
+  // Initialize after auxiliary window bindings are defined.
 
   function show(which) {
     L.classList.toggle('hidden', which === 'right');
@@ -532,6 +606,124 @@ input[type=range] {
     }, { passive: false });
   });
 
+  // Movable auxiliary view: cylindrical bottle, rotating inclined track, orbiting train.
+  const trainWindow = $('trainWindow'), trainCanvas = $('trainCanvas');
+  $('trainToggle').onclick = () => { trainWindow.classList.toggle('open'); $('trainToggle').classList.toggle('active',trainWindow.classList.contains('open')); render(); };
+  $('trainClose').onclick = () => {trainWindow.classList.remove('open');$('trainToggle').classList.remove('active');};
+  let drag = null;
+  $('trainHeader').addEventListener('pointerdown', e => {
+    if (e.target.closest('button')) return;
+    const rect=trainWindow.getBoundingClientRect();
+    drag={x:e.clientX-rect.left,y:e.clientY-rect.top};
+    $('trainHeader').setPointerCapture(e.pointerId);
+  });
+  $('trainHeader').addEventListener('pointermove', e => {
+    if(!drag)return;
+    trainWindow.style.left=Math.max(0,Math.min(innerWidth-trainWindow.offsetWidth,e.clientX-drag.x))+'px';
+    trainWindow.style.top=Math.max(0,Math.min(innerHeight-trainWindow.offsetHeight,e.clientY-drag.y))+'px';
+    trainWindow.style.right='auto';
+  });
+  $('trainHeader').addEventListener('pointerup',()=>drag=null);
+  $('trainHeader').addEventListener('pointercancel',()=>drag=null);
+
+  function drawTrain() {
+    if(!trainWindow.classList.contains('open'))return;
+    const {ctx,w,h}=size(trainCanvas);
+    ctx.clearRect(0,0,w,h);
+    const elevation=+$('cameraAngle').value*Math.PI/180;
+    const tilt=+$('orbitTilt').value*Math.PI/180;
+    const mult=+$('nodeSpeed').value/50;
+    const node=.65-(mult?TAU*day/(18.6*year/mult):0);
+    const b=Math.PI+TAU*day/moonPeriod;
+    const r=Math.min(w*.28,h*.31,120), bottleR=r*.88;
+    const bottleH=r*1.75;
+    const cx=w/2,cy=h*.53;
+    // Projection and camera depth match the main 3-D view.
+    function pt(theta,z,rad=r){return [cx+rad*Math.cos(theta),cy-rad*Math.sin(theta)*Math.sin(elevation)-z*Math.cos(elevation)];}
+    function depth(theta,z,rad=r){return rad*Math.sin(theta)*Math.cos(elevation)-z*Math.sin(elevation);}
+    function stroke(points,color,width=1,dash=[]){ctx.beginPath();points.forEach((p,i)=>i?ctx.lineTo(...p):ctx.moveTo(...p));ctx.strokeStyle=color;ctx.lineWidth=width;ctx.setLineDash(dash);ctx.stroke();ctx.setLineDash([]);}
+    function trackZ(t){return r*Math.tan(tilt)*Math.sin(t-node);}
+    // Glass body: translucent cylinder with elliptical rims and a rotating vertical seam.
+    const top=[],bottom=[];
+    for(let i=0;i<=120;i++){let t=TAU*i/120;top.push(pt(t,bottleH/2,bottleR));bottom.push(pt(t,-bottleH/2,bottleR));}
+    ctx.save();
+    const grad=ctx.createLinearGradient(cx-bottleR,0,cx+bottleR,0);
+    grad.addColorStop(0,'#9de8ff55');grad.addColorStop(.16,'#c6f4ff17');grad.addColorStop(.65,'#b8eaff0a');grad.addColorStop(1,'#9fe8ff66');
+    ctx.fillStyle=grad;
+    const lt=pt(Math.PI,bottleH/2,bottleR),lb=pt(Math.PI,-bottleH/2,bottleR);
+    ctx.fillRect(cx-bottleR,Math.min(lt[1],lb[1])-bottleR*Math.sin(elevation),bottleR*2,bottleH*Math.cos(elevation)+bottleR*2*Math.sin(elevation));
+    stroke(top,'#a8e5f1a6',1.5);stroke(bottom,'#a8e5f17a',1.5);
+    // Curved shoulder narrowing into a short neck and open bottle mouth.
+    // Rings follow a smooth shoulder profile rather than a flat cylinder cap.
+    const shoulder=[
+      [bottleH/2,bottleR],
+      [bottleH/2+r*.10,bottleR*.97],
+      [bottleH/2+r*.20,bottleR*.82],
+      [bottleH/2+r*.29,bottleR*.59],
+      [bottleH/2+r*.34,bottleR*.43],
+      [bottleH/2+r*.52,bottleR*.43]
+    ];
+    for(let k=0;k<shoulder.length;k++){
+      const [z0,rad0]=shoulder[k];
+      const rim=Array.from({length:121},(_,i)=>pt(TAU*i/120,z0,rad0));
+      stroke(rim,k===shoulder.length-1?'#d8f7ffcc':'#a8e5f16b',k===shoulder.length-1?2:1);
+    }
+    for(const theta of [0,Math.PI]){
+      stroke(shoulder.map(([z0,rad0])=>pt(theta,z0,rad0)),'#c3f4ffb0',2);
+    }
+    // Inner rim makes the mouth read as hollow glass.
+    const [mouthZ,mouthR]=shoulder[shoulder.length-1];
+    stroke(Array.from({length:121},(_,i)=>pt(TAU*i/120,mouthZ-r*.025,mouthR*.78)),'#a8e5f1a0',1.2);
+    stroke([pt(Math.PI/2,bottleH/2,bottleR),pt(Math.PI/2,-bottleH/2,bottleR)],'#d2f5ff55',2);
+    stroke([pt(3*Math.PI/2,bottleH/2,bottleR),pt(3*Math.PI/2,-bottleH/2,bottleR)],'#d2f5ff55',2);
+    // Painted vertical marking follows the bottle's clockwise rotation.
+    const seam=node;
+    stroke([pt(seam,bottleH/2,bottleR),pt(seam,-bottleH/2,bottleR)],'#ffe39b',3);
+    stroke([pt(seam+.32,bottleH/2,bottleR),pt(seam+.32,-bottleH/2,bottleR)],'#e9fbff66',1.3);
+    ctx.restore();
+    // Draw each rail segment by depth, so the far side appears behind the near side.
+    const segments=[];
+    const N=160;
+    for(let i=0;i<N;i++){
+      const t=TAU*i/N,t2=TAU*(i+1)/N,mid=(t+t2)/2;
+      segments.push({depth:depth(mid,trackZ(mid)),draw:()=>{
+        for(const rr of [r-5,r+5])stroke([pt(t,trackZ(t),rr),pt(t2,trackZ(t2),rr)],'#d4dce9',2.2);
+        // Sleepers are fixed to the rotating track: their angle advances with node.
+        // Use the track's local angular coordinate, not the fixed world-angle index.
+        const local0=t-node, local1=t2-node;
+        const sleeperCount=40;
+        const first=Math.ceil(local0/TAU*sleeperCount);
+        const lastTie=Math.floor(local1/TAU*sleeperCount);
+        for(let k=first;k<=lastTie;k++){
+          const tieAngle=node+TAU*k/sleeperCount;
+          stroke([pt(tieAngle,trackZ(tieAngle),r-10),pt(tieAngle,trackZ(tieAngle),r+10)],'#bb9564',3);
+        }
+      }});
+    }
+    // Train's angle and progress are identical to the Moon's lunar orbital angle.
+    // Leading locomotive followed by two short cars, each tangent to the track.
+    const carGap=.20;
+    for(let j=2;j>=0;j--){
+      const t=b-j*carGap,z=trackZ(t);
+      segments.push({depth:depth(t,z)+j*.00001,draw:()=>{
+        const center=pt(t,z+8),front=pt(t+.075,trackZ(t+.075)+8),back=pt(t-.075,trackZ(t-.075)+8);
+        const ang=Math.atan2(front[1]-back[1],front[0]-back[0]);
+        ctx.save();ctx.translate(...center);ctx.rotate(ang);
+        ctx.fillStyle=j===0?'#e85b48':j===1?'#e0b553':'#6eb8db';
+        ctx.strokeStyle='#172238';ctx.lineWidth=1.5;
+        ctx.fillRect(-12,-7,24,14);ctx.strokeRect(-12,-7,24,14);
+        ctx.fillStyle='#d7f5ff';ctx.fillRect(-3,-5,7,5);
+        if(j===0){ctx.fillStyle='#303b50';ctx.fillRect(5,-11,7,5);}
+        ctx.restore();
+      }});
+    }
+    segments.sort((a,b)=>a.depth-b.depth);
+    for(const seg of segments)seg.draw();
+    ctx.font='12px Arial';ctx.textAlign='left';ctx.fillStyle='#c5d8f3';
+    ctx.fillText('Tilt: '+$('orbitTilt').value+'°',12,20);
+    ctx.fillText('Camera: '+$('cameraAngle').value+'°',12,37);
+  }
+
   function frame(t) {
     if (last && direction) {
       day += direction * speed() *
@@ -545,6 +737,7 @@ input[type=range] {
 
   updateSpeed();
   buttons();
+  update3DControls();
   requestAnimationFrame(frame);
 
   window.addEventListener('resize', render);
