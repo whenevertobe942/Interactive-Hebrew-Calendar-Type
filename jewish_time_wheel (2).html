@@ -3,17 +3,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jewish Time Wheel Clock V3</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <title>Jewish Time Wheel Clock</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     
+    <!-- Offline Tailwind Utility & Base Stylesheet -->
     <style>
+        *, ::before, ::after { box-sizing: border-box; border-width: 0; border-style: solid; border-color: #e2e8f0; }
+        html { line-height: 1.5; -webkit-text-size-adjust: 100%; font-family: 'Inter', sans-serif; }
+        body { margin: 0; line-height: inherit; }
+        h1, h2, p { margin: 0; }
+        button { font-family: inherit; font-size: 100%; font-weight: inherit; line-height: inherit; color: inherit; margin: 0; padding: 0; background: transparent; cursor: pointer; }
+        input { font-family: inherit; font-size: 100%; line-height: inherit; color: inherit; margin: 0; padding: 0; }
+
+        .h-full { height: 100%; }
+        .bg-slate-950 { background-color: #020617; }
+        .text-slate-100 { color: #f1f5f9; }
+        .text-slate-200 { color: #e2e8f0; }
+        .text-slate-300 { color: #cbd5e1; }
+        .text-slate-400 { color: #94a3b8; }
+        .text-slate-500 { color: #64748b; }
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .overflow-hidden { overflow: hidden; }
+        .font-sans { font-family: 'Inter', sans-serif; }
+        .font-serif { font-family: 'Cinzel', serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .relative { position: relative; }
+        .absolute { position: absolute; }
+        .flex-1 { flex: 1 1 0%; }
+        .h-2\/3 { height: 66.666667%; }
+        .top-4 { top: 1rem; }
+        .left-4 { left: 1rem; }
+        .bottom-4 { bottom: 1rem; }
+        .z-10 { z-index: 10; }
+        .z-20 { z-index: 20; }
+        .flex-wrap { flex-wrap: wrap; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-1 { gap: 0.25rem; }
+        .gap-1\.5 { gap: 0.375rem; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        .bg-slate-900 { background-color: #0f172a; }
+        .bg-slate-900\/80 { background-color: rgba(15, 23, 42, 0.8); }
+        .bg-slate-900\/90 { background-color: rgba(15, 23, 42, 0.9); }
+        .bg-slate-900\/95 { background-color: rgba(15, 23, 42, 0.95); }
+        .backdrop-blur-md { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+        .p-2 { padding: 0.5rem; }
+        .p-3 { padding: 0.75rem; }
+        .p-4 { padding: 1rem; }
+        .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+        .px-2\.5 { padding-left: 0.625rem; padding-right: 0.625rem; }
+        .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+        .py-0\.5 { padding-top: 0.125rem; padding-bottom: 0.125rem; }
+        .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+        .py-1\.5 { padding-top: 0.375rem; padding-bottom: 0.375rem; }
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .rounded-xl { border-radius: 0.75rem; }
+        .rounded-lg { border-radius: 0.5rem; }
+        .rounded-md { border-radius: 0.375rem; }
+        .rounded { border-radius: 0.25rem; }
+        .rounded-full { border-radius: 9999px; }
+        .border { border-width: 1px; border-style: solid; }
+        .border-slate-700 { border-color: #334155; }
+        .border-slate-800 { border-color: #1e293b; }
+        .border-slate-800\/60 { border-color: rgba(30, 41, 59, 0.6); }
+        .border-slate-800\/80 { border-color: rgba(30, 41, 59, 0.8); }
+        .border-amber-400 { border-color: #fbbf24; }
+        .border-amber-500 { border-color: #f59e0b; }
+        .border-amber-500\/30 { border-color: rgba(245, 158, 11, 0.3); }
+        .border-amber-500\/40 { border-color: rgba(245, 158, 11, 0.4); }
+        .border-cyan-400 { border-color: #22d3ee; }
+        .border-cyan-500\/30 { border-color: rgba(6, 182, 212, 0.3); }
+        .border-cyan-500\/40 { border-color: rgba(6, 182, 212, 0.4); }
+        .border-indigo-400 { border-color: #818cf8; }
+        .border-indigo-800\/50 { border-color: rgba(67, 56, 202, 0.5); }
+        .border-purple-500\/30 { border-color: rgba(168, 85, 247, 0.3); }
+        .border-purple-500\/40 { border-color: rgba(168, 85, 247, 0.4); }
+        .shadow-xl { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); }
+        .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); }
+        .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+        .shadow-md { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1); }
+        .text-xs { font-size: 0.75rem; line-height: 1rem; }
+        .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+        .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+        .text-\[9px\] { font-size: 9px; }
+        .text-\[10px\] { font-size: 10px; }
+        .text-\[11px\] { font-size: 11px; }
+        .transition { transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+        .hidden { display: none !important; }
+        .h-4 { height: 1rem; }
+        .w-4 { width: 1rem; }
+        .h-3 { height: 0.75rem; }
+        .w-3 { width: 0.75rem; }
+        .h-3\.5 { height: 0.875rem; }
+        .w-3\.5 { width: 0.875rem; }
+        .h-5 { height: 1.25rem; }
+        .w-5 { width: 1.25rem; }
+        .w-\[1px\] { width: 1px; }
+        .mx-1 { margin-left: 0.25rem; margin-right: 0.25rem; }
+        .ms-1 { margin-inline-start: 0.25rem; }
+        .text-cyan-400 { color: #22d3ee; }
+        .text-purple-400 { color: #c084fc; }
+        .text-purple-300 { color: #d8b4fe; }
+        .bg-purple-950\/40 { background-color: rgba(58, 12, 90, 0.4); }
+        .bg-slate-950\/60 { background-color: rgba(2, 6, 23, 0.6); }
+        .pointer-events-none { pointer-events: none; }
+        .bg-indigo-950 { background-color: #1e1b4b; }
+        .bg-amber-500\/30 { background-color: rgba(245, 158, 11, 0.3); }
+        .bg-amber-500 { background-color: #f59e0b; }
+        .bg-purple-500 { background-color: #a855f7; }
+        .font-medium { font-weight: 500; }
+        .cursor-grab { cursor: grab; }
+        .active\:cursor-grabbing:active { cursor: grabbing; }
+        .block { display: block; }
+        .font-bold { font-weight: 700; }
+        .text-amber-400 { color: #f59e0b; }
+        .text-amber-300 { color: #fcd34d; }
+        .mt-0\.5 { margin-top: 0.125rem; }
+        .mb-1 { margin-bottom: 0.25rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-3 { margin-bottom: 0.75rem; }
+        .w-full { width: 100%; }
+        .border-t { border-top-width: 1px; }
+        .border-l { border-left-width: 1px; }
+        .overflow-y-auto { overflow-y: auto; }
+        .sticky { position: sticky; }
+        .tracking-wide { letter-spacing: 0.025em; }
+        .tracking-wider { letter-spacing: 0.05em; }
+        .space-y-5 > * + * { margin-top: 1.25rem; }
+        .space-y-3 > * + * { margin-top: 0.75rem; }
+        .space-y-2\.5 > * + * { margin-top: 0.625rem; }
+        .uppercase { text-transform: uppercase; }
+        .grid { display: grid; }
+        .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        .bg-slate-900 { background-color: #0f172a; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .focus\:ring-1:focus { outline: none; box-shadow: 0 0 0 1px var(--tw-ring-color); }
+        .focus\:ring-amber-500:focus { --tw-ring-color: #f59e0b; }
+        .focus\:ring-cyan-500:focus { --tw-ring-color: #06b6d4; }
+        .focus\:ring-purple-500:focus { --tw-ring-color: #a855f7; }
+        .focus\:outline-none:focus { outline: none; }
+        .mt-1 { margin-top: 0.25rem; }
+        .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .text-indigo-300 { color: #a5b4fc; }
+        .text-slate-500 { color: #64748b; }
+        .pt-1 { padding-top: 0.25rem; }
+        .bg-amber-500\/10 { background-color: rgba(245, 158, 11, 0.1); }
+        .bg-amber-500\/20 { background-color: rgba(245, 158, 11, 0.2); }
+        .bg-slate-800 { background-color: #1e293b; }
+        .hover\:bg-slate-700:hover { background-color: #334155; }
+        .hover\:bg-slate-800:hover { background-color: #1e293b; }
+        .hover\:border-cyan-500\/50:hover { border-color: rgba(6, 182, 212, 0.5); }
+        .hover\:border-cyan-400:hover { border-color: #22d3ee; }
+        .hover\:text-slate-200:hover { color: #e2e8f0; }
+        .text-cyan-300 { color: #67e8f9; }
+        .bg-cyan-950\/40 { background-color: rgba(8, 47, 73, 0.4); }
+        .hover\:bg-cyan-900\/60:hover { background-color: rgba(12, 74, 110, 0.6); }
+        .text-amber-400\/90 { color: rgba(245, 158, 11, 0.9); }
+        .bg-indigo-950\/50 { background-color: rgba(30, 27, 75, 0.5); }
+        .text-center { text-align: center; }
+        .p-0\.5 { padding: 0.125rem; }
+        .text-red-400 { color: #f87171; }
+
+        @media (min-width: 768px) {
+            .md\:flex-row { flex-direction: row; }
+            .md\:h-full { height: 100%; }
+            .md\:border-t-0 { border-top-width: 0px; }
+            .md\:border-l { border-left-width: 1px; }
+            .md\:w-96 { width: 24rem; }
+        }
+        @media (min-width: 640px) {
+            .sm\:inline { display: inline; }
+            .sm\:flex { display: flex; }
+            .sm\:text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+        }
+
         /* Custom scrollbars */
         ::-webkit-scrollbar {
             width: 6px;
@@ -58,8 +227,8 @@
             <span id="zoomLevelDisplay" class="font-mono text-cyan-400 text-xs px-2 py-1 bg-slate-950/60 rounded border border-slate-800">Zoom: 1.0x</span>
         </div>
 
-        <!-- Floating Legend & Info -->
-        <div class="absolute bottom-4 left-4 z-10 hidden sm:flex flex-col gap-1 bg-slate-900/80 backdrop-blur-md p-3 rounded-xl border border-slate-800 text-xs text-slate-400 shadow-lg pointer-events-none">
+        <!-- Floating Legend & Info (Moved to Bottom Left Corner) -->
+        <div class="absolute bottom-4 left-4 z-10 flex flex-col gap-1 bg-slate-900/80 backdrop-blur-md p-3 rounded-xl border border-slate-800 text-xs text-slate-400 shadow-lg pointer-events-none">
             <div class="flex items-center gap-2">
                 <span class="w-3 h-3 rounded-full bg-indigo-950 border border-indigo-400 inline-block"></span>
                 <span>Night Halves (Consistent Dark Blue)</span>
@@ -93,60 +262,72 @@
     <!-- SIDEBAR CONTROLS -->
     <div class="w-full md:w-96 bg-slate-900 border-t md:border-t-0 md:border-l border-slate-800 flex flex-col h-1/3 md:h-full z-20 shadow-2xl overflow-y-auto">
         <!-- Header -->
-        <div class="p-4 border-b border-slate-800 bg-slate-900/90 sticky top-0 backdrop-blur-md z-10 flex items-center justify-between">
+        <div class="p-4 border-b border-slate-800 bg-slate-900/90 sticky top-0 backdrop-blur-md z-10">
             <div>
                 <h1 class="font-serif text-xl font-bold text-amber-400 tracking-wide flex items-center gap-2">
                     <i data-lucide="clock" class="w-5 h-5 text-amber-400"></i>
-                    Jewish Time Wheel V3
+                    Jewish Time Wheel
                 </h1>
-                <p class="text-xs text-slate-400 mt-0.5">7 Days (1–7) • 24 Hours • 1,080 Chalakim/hr</p>
+                <div class="text-[11px] font-serif tracking-wide text-amber-300/80 mt-0.5">A Conceptual Torah project by Bumy Goldson</div>
+                <p class="text-xs text-slate-400 mt-1">7 Days (1–7) • 24 Hours • 1,080 Chalakim/hr</p>
             </div>
         </div>
 
         <div class="p-4 space-y-5 flex-1">
             
+            <!-- TOGGLE CARD ABOVE MAIN TIME -->
+            <div class="bg-slate-950/60 rounded-xl p-3 border border-slate-800 shadow-lg">
+                <div class="flex justify-between items-center">
+                    <span class="text-xs font-semibold text-slate-300">Hour Calculation Mode</span>
+                    <div class="flex bg-slate-900 p-0.5 rounded-lg border border-slate-800 text-xs font-medium">
+                        <button id="btnModeRishonim" class="px-2.5 py-1 rounded-md text-amber-400 bg-slate-800 border border-slate-700 shadow-sm transition">
+                            Rishonim Mode
+                        </button>
+                        <button id="btnModeShul" class="px-2.5 py-1 rounded-md text-slate-400 hover:text-slate-200 transition">
+                            Shul Mode
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- 1. MAIN TIME CARD -->
-            <div class="bg-slate-950/60 rounded-xl p-4 border border-amber-500/30 shadow-lg relative overflow-hidden group">
-                <div class="absolute top-0 left-0 w-1 h-full bg-amber-500"></div>
+            <div class="bg-slate-950/60 rounded-xl p-4 border border-amber-500/30 shadow-lg relative">
                 <div class="flex justify-between items-center mb-2">
                     <h2 class="text-xs font-semibold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
-                        <i data-lucide="compass" class="w-4 h-4"></i> Main Time Hand
+                        <i data-lucide="compass" class="w-4 h-4 text-amber-400"></i> Main Time Hand
                     </h2>
-                    <span id="mainDayNameBadge" class="text-[11px] font-serif font-bold text-amber-300 bg-slate-900 px-2 py-0.5 rounded border border-amber-500/30">
-                        Day 1 (Rishon / Sun)
-                    </span>
                 </div>
 
                 <div class="space-y-3">
-                    <!-- Single-line compact inputs for Day, Hour, Chelek -->
-                    <div class="grid grid-cols-3 gap-2">
+                    <!-- Compact inputs for Day, Hour, (Minute in Shul mode), Chelek -->
+                    <div id="mainInputsGrid" class="grid grid-cols-3 gap-2">
                         <div>
                             <label class="text-[10px] text-slate-400 block mb-1">Day (1–7)</label>
-                            <input type="number" id="mainDayInput" min="1" max="7" value="1" class="drag-input w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-mono font-bold text-amber-300 focus:ring-1 focus:ring-amber-500 focus:outline-none">
-                            <span id="mainDaySubLabel" class="text-[9px] font-serif text-amber-400/90 block mt-1 truncate">Rishon / Sun</span>
+                            <input type="number" id="mainDayInput" min="1" max="7" value="1" class="drag-input w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-mono font-bold text-amber-300 focus:ring-1 focus:ring-amber-500 focus:outline-none text-center">
+                            <span id="mainDaySubLabel" class="text-[9px] font-sans text-amber-400/90 block mt-1 text-center truncate">Sunday</span>
                         </div>
                         <div>
-                            <label class="text-[10px] text-slate-400 block mb-1">Hour (0–23)</label>
-                            <input type="number" id="mainHour24Input" min="0" max="23" value="0" class="drag-input w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-mono text-slate-100 focus:ring-1 focus:ring-amber-500 focus:outline-none">
-                            <span id="mainHourSubLabel" class="text-[9px] font-mono text-indigo-300 block mt-1 truncate">Night Hour 1</span>
+                            <label id="lblMainHour" class="text-[10px] text-slate-400 block mb-1">Hour (0–23)</label>
+                            <input type="number" id="mainHour24Input" min="0" max="23" value="0" class="drag-input w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-mono font-bold text-amber-300 focus:ring-1 focus:ring-amber-500 focus:outline-none text-center">
+                            <span id="mainHourSubLabel" class="text-[9px] font-mono text-amber-400/80 block mt-1 text-center truncate">Night Hour 1</span>
+                        </div>
+                        <div id="mainMinuteBox" class="hidden">
+                            <label class="text-[10px] text-slate-400 block mb-1">Minute (0–59)</label>
+                            <input type="number" id="mainMinuteInput" min="0" max="59" value="0" class="drag-input w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-mono font-bold text-amber-300 focus:ring-1 focus:ring-amber-500 focus:outline-none text-center">
+                            <span class="text-[9px] text-amber-400/80 block mt-1 text-center">/ 60 m</span>
                         </div>
                         <div>
-                            <label class="text-[10px] text-slate-400 block mb-1">Chelek (0–1079)</label>
-                            <input type="number" id="mainChelekInput" min="0" max="1079" value="0" class="drag-input w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-mono text-amber-400 focus:ring-1 focus:ring-amber-500 focus:outline-none">
-                            <span class="text-[9px] text-slate-500 block mt-1">/ 1080 c</span>
+                            <label id="lblMainChelek" class="text-[10px] text-slate-400 block mb-1">Chelek (0–1079)</label>
+                            <input type="number" id="mainChelekInput" min="0" max="1079" value="0" class="drag-input w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-mono font-bold text-amber-300 focus:ring-1 focus:ring-amber-500 focus:outline-none text-center">
+                            <span id="mainChelekSubLabel" class="text-[9px] text-amber-400/80 block mt-1 text-center">/ 1080 c</span>
                         </div>
                     </div>
 
                     <!-- Preset Bar -->
-                    <div class="flex items-center justify-between text-[11px] pt-1 border-t border-slate-800/60">
-                        <div id="mainHalfBadge" class="text-slate-400">
-                            <span id="mainHalfText" class="font-medium text-indigo-400">Night</span>
-                            <span id="mainHalf12Text" class="font-mono text-slate-400 ms-1">(1/12)</span>
-                        </div>
-                        
+                    <div class="flex items-center justify-end text-[11px] pt-1 border-t border-slate-800/60">
                         <!-- Baharad Quick Preset with Hebrew -->
                         <button id="btnBaharad" class="px-2.5 py-1 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/40 text-amber-300 rounded-lg text-xs font-serif font-bold transition flex items-center gap-1">
-                            <i data-lucide="sparkles" class="w-3 h-3 text-amber-400"></i> Set Bahara"d (בהר"ד)
+                            <i data-lucide="sparkles" class="w-3 h-3 text-amber-400"></i> Baharad Preset (בהר"ד)
                         </button>
                     </div>
 
@@ -158,11 +339,11 @@
                 </div>
             </div>
 
-            <!-- 2. ADD / SUBTRACT TIME CARD -->
+            <!-- 2. INITIAL ADD / SUBTRACT DURATION CARD -->
             <div class="bg-slate-950/60 rounded-xl p-4 border border-slate-800 shadow-lg relative">
                 <div class="flex justify-between items-center mb-3">
                     <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-                        <i data-lucide="plus-minus" class="w-4 h-4 text-cyan-400"></i> Offset Duration
+                        <i data-lucide="plus-minus" class="w-4 h-4 text-cyan-400"></i> Initial Offset Unit
                     </h2>
                     
                     <!-- Plus / Minus Toggle -->
@@ -176,19 +357,23 @@
                     </div>
                 </div>
 
-                <!-- Single line input layout for Duration -->
-                <div class="grid grid-cols-3 gap-2 mb-3">
+                <!-- Input layout for Duration -->
+                <div id="addInputsGrid" class="grid grid-cols-3 gap-2 mb-3">
                     <div>
                         <label class="text-[10px] text-slate-400 block mb-1">Days</label>
-                        <input type="number" id="addDaysInput" min="0" value="29" class="drag-input w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-mono text-slate-100 focus:ring-1 focus:ring-cyan-500 focus:outline-none">
+                        <input type="number" id="addDaysInput" min="0" value="29" class="drag-input w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-mono font-bold text-cyan-300 focus:ring-1 focus:ring-cyan-500 focus:outline-none text-center">
                     </div>
                     <div>
                         <label class="text-[10px] text-slate-400 block mb-1">Hours</label>
-                        <input type="number" id="addHoursInput" min="0" value="12" class="drag-input w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-mono text-slate-100 focus:ring-1 focus:ring-cyan-500 focus:outline-none">
+                        <input type="number" id="addHoursInput" min="0" value="12" class="drag-input w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-mono font-bold text-cyan-300 focus:ring-1 focus:ring-cyan-500 focus:outline-none text-center">
+                    </div>
+                    <div id="addMinuteBox" class="hidden">
+                        <label class="text-[10px] text-slate-400 block mb-1">Minute (0–59)</label>
+                        <input type="number" id="addMinuteInput" min="0" value="0" class="drag-input w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-mono font-bold text-cyan-300 focus:ring-1 focus:ring-cyan-500 focus:outline-none text-center">
                     </div>
                     <div>
                         <label class="text-[10px] text-slate-400 block mb-1">Chalakim</label>
-                        <input type="number" id="addChelekInput" min="0" value="793" class="drag-input w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-mono text-slate-100 focus:ring-1 focus:ring-cyan-500 focus:outline-none">
+                        <input type="number" id="addChelekInput" min="0" value="793" class="drag-input w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-mono font-bold text-cyan-300 focus:ring-1 focus:ring-cyan-500 focus:outline-none text-center">
                     </div>
                 </div>
 
@@ -202,83 +387,174 @@
                 </div>
             </div>
 
-            <!-- 3. SUM / RESULT TIME CARD (READ ONLY WITH COPY BUTTON) -->
-            <div class="bg-slate-950/60 rounded-xl p-4 border border-cyan-500/30 shadow-lg relative overflow-hidden">
-                <div class="absolute top-0 left-0 w-1 h-full bg-cyan-400"></div>
+            <!-- 3. MULTIPLIER CARD -->
+            <div class="bg-slate-950/60 rounded-xl p-4 border border-purple-900/50 shadow-lg relative">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-xs font-semibold uppercase tracking-wider text-purple-400 flex items-center gap-1.5">
+                        <i data-lucide="repeat" class="w-4 h-4 text-purple-400"></i> Iteration Multiplier
+                    </h2>
+                </div>
+
+                <div>
+                    <label class="text-[10px] text-slate-400 block mb-1">Multiplier (Number of Times)</label>
+                    <input type="number" id="multiplierInput" min="1" value="1" class="drag-input w-full bg-slate-900 border border-purple-900/60 rounded-lg px-3 py-1.5 text-xs font-mono font-bold text-purple-300 focus:ring-1 focus:ring-purple-500 focus:outline-none text-center">
+                    <span class="text-[10px] text-slate-400 block mt-1">Multiplies the initial offset amount before adding/subtracting</span>
+                </div>
+            </div>
+
+            <!-- 4. FINAL MULTIPLIED OFFSET CARD -->
+            <div class="bg-slate-950/60 rounded-xl p-4 border border-purple-900/50 shadow-lg relative">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-xs font-semibold uppercase tracking-wider text-purple-300 flex items-center gap-1.5">
+                        <i data-lucide="calculator" class="w-4 h-4 text-purple-400"></i> Total Offset Subtotal
+                    </h2>
+                    <span class="text-[10px] font-mono text-purple-400/80 bg-slate-900 px-2 py-0.5 rounded border border-purple-900/50">Calculated</span>
+                </div>
+
+                <div id="subtotalGrid" class="grid grid-cols-3 gap-2 font-mono text-center">
+                    <div class="bg-slate-900/90 rounded-lg p-1.5 border border-purple-900/50">
+                        <div class="text-[9px] text-purple-300/70">Total Days</div>
+                        <div id="subtotalDaysText" class="text-xs font-bold text-purple-300">29d</div>
+                    </div>
+                    <div class="bg-slate-900/90 rounded-lg p-1.5 border border-purple-900/50">
+                        <div class="text-[9px] text-purple-300/70">Hours</div>
+                        <div id="subtotalHoursText" class="text-xs font-bold text-purple-300">12h</div>
+                    </div>
+                    <div id="subtotalMinBox" class="bg-slate-900/90 rounded-lg p-1.5 border border-purple-900/50 hidden">
+                        <div class="text-[9px] text-purple-300/70">Minutes</div>
+                        <div id="subtotalMinText" class="text-xs font-bold text-purple-300">0m</div>
+                    </div>
+                    <div class="bg-slate-900/90 rounded-lg p-1.5 border border-purple-900/50">
+                        <div class="text-[9px] text-purple-300/70">Chalakim</div>
+                        <div id="subtotalChelekText" class="text-xs font-bold text-purple-300">793c</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. SUM / RESULT TIME CARD (READ ONLY WITH COPY BUTTON) -->
+            <div class="bg-slate-950/60 rounded-xl p-4 border border-cyan-500/30 shadow-lg relative">
                 <div class="flex justify-between items-center mb-2">
                     <h2 class="text-xs font-semibold uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
-                        <i data-lucide="calculator" class="w-4 h-4"></i> Resulting Sum Time
+                        <i data-lucide="calculator" class="w-4 h-4 text-cyan-400"></i> Resulting Sum Time
                     </h2>
-                    <span class="text-[10px] font-mono text-slate-500 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">Read-Only</span>
+                    <span class="text-[10px] font-mono text-cyan-400/80 bg-slate-900 px-2 py-0.5 rounded border border-cyan-500/30">Read-Only</span>
                 </div>
 
                 <div class="space-y-2.5">
-                    <!-- Day display -->
-                    <div class="bg-slate-900/90 rounded-lg p-2 border border-slate-800 flex justify-between items-center">
-                        <span class="text-xs text-slate-400">Day:</span>
-                        <span id="sumDayText" class="text-xs font-bold text-cyan-300 font-sans">Day 2 (Yom Sheni / Mon)</span>
-                    </div>
-
-                    <!-- Single-line compact outputs for Sum (Day 1-7, Hour, Chelek) -->
-                    <div class="grid grid-cols-3 gap-2 font-mono">
+                    <!-- Single-line compact outputs for Sum (Day 1-7, Hour, Min, Chelek) -->
+                    <div id="sumOutputsGrid" class="grid grid-cols-3 gap-2 font-mono">
                         <div class="bg-slate-900/90 rounded-lg p-1.5 border border-slate-800 text-center">
                             <div class="text-[9px] text-slate-400">Day</div>
-                            <div id="sumDayNumText" class="text-xs font-bold text-slate-100">Day 2</div>
+                            <div id="sumDayNumText" class="text-xs font-bold text-cyan-300">2</div>
+                            <div id="sumDaySubText" class="text-[9px] font-sans text-cyan-400/80 mt-0.5">Monday</div>
                         </div>
                         <div class="bg-slate-900/90 rounded-lg p-1.5 border border-slate-800 text-center">
-                            <div class="text-[9px] text-slate-400">Hour (24h)</div>
-                            <div id="sumHourText" class="text-xs font-bold text-slate-100">12:00</div>
+                            <div id="lblSumHour" class="text-[9px] text-slate-400">Hour (24h)</div>
+                            <div id="sumHourText" class="text-xs font-bold text-cyan-300">12:00</div>
+                        </div>
+                        <div id="sumMinuteBox" class="bg-slate-900/90 rounded-lg p-1.5 border border-slate-800 text-center hidden">
+                            <div class="text-[9px] text-slate-400">Minute (0–59)</div>
+                            <div id="sumMinuteText" class="text-xs font-bold text-cyan-300">0m</div>
                         </div>
                         <div class="bg-slate-900/90 rounded-lg p-1.5 border border-slate-800 text-center">
                             <div class="text-[9px] text-slate-400">Chelek</div>
-                            <div id="sumChelekText" class="text-xs font-bold text-cyan-400">793c</div>
+                            <div id="sumChelekText" class="text-xs font-bold text-cyan-300">793c</div>
                         </div>
                     </div>
 
-                    <div id="sumCycleWrapNotice" class="text-[10px] text-indigo-300 bg-indigo-950/50 border border-indigo-800/50 rounded p-1.5 text-center flex items-center justify-center gap-1">
-                        <i data-lucide="repeat" class="w-3 h-3"></i>
+                    <!-- Total Cycle Chelek Display in Sum Time -->
+                    <div class="pt-1 text-[11px] font-mono text-slate-400 flex justify-between border-t border-slate-800/80">
+                        <span>Total Cycle Chelek:</span>
+                        <span id="sumTotalChelekDisplay" class="text-cyan-400 font-semibold">0 / 181,440</span>
+                    </div>
+
+                    <div id="sumCycleWrapNotice" class="text-[10px] text-cyan-300 bg-cyan-950/50 border border-cyan-800/50 rounded p-1.5 text-center flex items-center justify-center gap-1">
+                        <i data-lucide="repeat" class="w-3 h-3 text-cyan-400"></i>
                         <span id="sumCycleText">0 full week cycles wrapped</span>
                     </div>
 
                     <!-- Copy Sum to Main Time Button -->
-            <button id="btnCopySumToMain" class="w-full py-2 bg-cyan-950/40 hover:bg-cyan-900/60 border border-cyan-500/40 hover:border-cyan-400 text-cyan-300 rounded-lg text-xs font-semibold transition flex items-center justify-center gap-2 shadow-md">
-                <i data-lucide="copy" class="w-3.5 h-3.5 text-cyan-400"></i>
-                Copy Sum to Main Time
-            </button>
+                    <button id="btnCopySumToMain" class="w-full py-2 bg-cyan-950/40 hover:bg-cyan-900/60 border border-cyan-500/40 hover:border-cyan-400 text-cyan-300 rounded-lg text-xs font-semibold transition flex items-center justify-center gap-2 shadow-md">
+                        <i data-lucide="copy" class="w-3.5 h-3.5 text-cyan-400"></i>
+                        Copy Sum to Main Time
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- SINGLE CONSOLIDATED JAVASCRIPT APP LOGIC -->
+    <!-- OFFLINE ICON & APP LOGIC -->
     <script>
+        // Offline Lucide Icon Engine
+        const lucideIconsMap = {
+            'zoom-in': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>',
+            'zoom-out': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>',
+            'rotate-ccw': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>',
+            'clock': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+            'compass': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>',
+            'sparkles': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>',
+            'plus-minus': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/><path d="M5 19h6"/></svg>',
+            'moon': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>',
+            'calculator': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>',
+            'repeat': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>',
+            'copy': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>'
+        };
+
+        window.lucide = {
+            createIcons: function() {
+                document.querySelectorAll('[data-lucide]').forEach(el => {
+                    const iconName = el.getAttribute('data-lucide');
+                    if (lucideIconsMap[iconName]) {
+                        const temp = document.createElement('div');
+                        temp.innerHTML = lucideIconsMap[iconName];
+                        const svg = temp.querySelector('svg');
+                        if (svg) {
+                            Array.from(el.attributes).forEach(attr => {
+                                if (attr.name !== 'data-lucide') {
+                                    svg.setAttribute(attr.name, attr.value);
+                                }
+                            });
+                            el.classList.forEach(cls => svg.classList.add(cls));
+                            el.replaceWith(svg);
+                        }
+                    }
+                });
+            }
+        };
+
         // Initialize Lucide Icons
         lucide.createIcons();
 
         // CONSTANTS & JEWISH TIME MATHEMATICS
         const CHALAKIM_PER_HOUR = 1080;
+        const MINUTES_PER_HOUR = 60;
+        const CHALAKIM_PER_MINUTE = 18; // In Shul mode: 60 mins/hr, 18 chalakim/min
         const HOURS_PER_DAY = 24;
         const DAYS_PER_WEEK = 7;
         const CHALAKIM_PER_DAY = HOURS_PER_DAY * CHALAKIM_PER_HOUR; // 25,920
         const CHALAKIM_PER_WEEK = DAYS_PER_WEEK * CHALAKIM_PER_DAY; // 181,440
 
-        // 1-Indexed Day Map: Day 1 = Sunday, Day 7 = Shabbos
-        const DAY_NAMES_1_INDEXED = [
+        // English-only day names except Shabbos
+        const DAY_NAMES_ENGLISH = [
             null,
-            { en: "Sunday", he: "ראשון", short: "Rishon / Sun", full: "Yom Rishon (Sunday)" },
-            { en: "Monday", he: "שני", short: "Sheni / Mon", full: "Yom Sheni (Monday)" },
-            { en: "Tuesday", he: "שלישי", short: "Shlishi / Tue", full: "Yom Shlishi (Tuesday)" },
-            { en: "Wednesday", he: "רביעי", short: "Revi'i / Wed", full: "Yom Revi'i (Wednesday)" },
-            { en: "Thursday", he: "חמישי", short: "Chamishi / Thu", full: "Yom Chamishi (Thursday)" },
-            { en: "Friday", he: "שישי", short: "Shishi / Fri", full: "Yom Shishi (Friday)" },
-            { en: "Shabbos", he: "שבת", short: "Shabbos (Day 7)", full: "Yom Shabbat (Shabbos)" }
+            { en: "Sunday", short: "Sun" },
+            { en: "Monday", short: "Mon" },
+            { en: "Tuesday", short: "Tue" },
+            { en: "Wednesday", short: "Wed" },
+            { en: "Thursday", short: "Thu" },
+            { en: "Friday", short: "Fri" },
+            { en: "Shabbos", short: "Shabbos" }
         ];
 
         // SINGLE STATE MANAGEMENT OBJECT
         let state = {
-            mainChelekTotal: 0, // 0 to 181,439 (Total Chalakim in a 7-day week)
-            offsetChelek: (29 * CHALAKIM_PER_DAY) + (12 * CHALAKIM_PER_HOUR) + 793, // Default Molad offset (+29d 12h 793c)
-            isAddMode: true, // true for Add (+), false for Subtract (-)
+            mainChelekTotal: 0, 
+            offsetChelek: (29 * CHALAKIM_PER_DAY) + (12 * CHALAKIM_PER_HOUR) + 793, 
+            multiplier: 1,
+            isAddMode: true, 
             
-            // Canvas View State (Pan & Zoom)
+            isShulMode: false,
+
             zoom: 1.0,
             panX: 0,
             panY: 0,
@@ -286,8 +562,7 @@
             dragStartX: 0,
             dragStartY: 0,
             
-            // Interactive Hand Dragging & Number Dragging State
-            activeHandDrag: null, // 'main' | 'sum' | null
+            activeHandDrag: null, 
             activeNumberDragInput: null,
             dragInputStartY: 0,
             dragBaselineTotal: 0,
@@ -300,68 +575,119 @@
         const container = document.getElementById('canvasContainer');
         const tooltip = document.getElementById('wheelTooltip');
 
-        // Sidebar Main Inputs & Sublabels
+        const btnModeRishonim = document.getElementById('btnModeRishonim');
+        const btnModeShul = document.getElementById('btnModeShul');
+
+        const lblMainHour = document.getElementById('lblMainHour');
+        const lblSumHour = document.getElementById('lblSumHour');
+        const lblMainChelek = document.getElementById('lblMainChelek');
+
+        const mainInputsGrid = document.getElementById('mainInputsGrid');
+        const mainMinuteBox = document.getElementById('mainMinuteBox');
+        const mainMinuteInput = document.getElementById('mainMinuteInput');
         const mainDayInput = document.getElementById('mainDayInput');
-        const mainDayNameBadge = document.getElementById('mainDayNameBadge');
         const mainDaySubLabel = document.getElementById('mainDaySubLabel');
         const mainHour24Input = document.getElementById('mainHour24Input');
         const mainHourSubLabel = document.getElementById('mainHourSubLabel');
-        const mainHalfText = document.getElementById('mainHalfText');
-        const mainHalf12Text = document.getElementById('mainHalf12Text');
         const mainChelekInput = document.getElementById('mainChelekInput');
+        const mainChelekSubLabel = document.getElementById('mainChelekSubLabel');
         const mainTotalChelekDisplay = document.getElementById('mainTotalChelekDisplay');
         const btnBaharad = document.getElementById('btnBaharad');
 
-        // Duration Inputs
         const btnModeAdd = document.getElementById('btnModeAdd');
         const btnModeSub = document.getElementById('btnModeSub');
+        const addInputsGrid = document.getElementById('addInputsGrid');
+        const addMinuteBox = document.getElementById('addMinuteBox');
+        const addMinuteInput = document.getElementById('addMinuteInput');
         const addDaysInput = document.getElementById('addDaysInput');
         const addHoursInput = document.getElementById('addHoursInput');
         const addChelekInput = document.getElementById('addChelekInput');
         const presetMolad = document.getElementById('presetMolad');
 
-        // Read-only Sum Display & Copy Button
-        const sumDayText = document.getElementById('sumDayText');
+        const multiplierInput = document.getElementById('multiplierInput');
+        const subtotalGrid = document.getElementById('subtotalGrid');
+        const subtotalMinBox = document.getElementById('subtotalMinBox');
+        const subtotalMinText = document.getElementById('subtotalMinText');
+        const subtotalDaysText = document.getElementById('subtotalDaysText');
+        const subtotalHoursText = document.getElementById('subtotalHoursText');
+        const subtotalChelekText = document.getElementById('subtotalChelekText');
+
         const sumDayNumText = document.getElementById('sumDayNumText');
+        const sumDaySubText = document.getElementById('sumDaySubText');
         const sumHourText = document.getElementById('sumHourText');
+        const sumOutputsGrid = document.getElementById('sumOutputsGrid');
+        const sumMinuteBox = document.getElementById('sumMinuteBox');
+        const sumMinuteText = document.getElementById('sumMinuteText');
         const sumChelekText = document.getElementById('sumChelekText');
+        const sumTotalChelekDisplay = document.getElementById('sumTotalChelekDisplay');
         const sumCycleText = document.getElementById('sumCycleText');
         const btnCopySumToMain = document.getElementById('btnCopySumToMain');
 
         const zoomLevelDisplay = document.getElementById('zoomLevelDisplay');
 
-        // CORE TIME HELPER FUNCTIONS (1-indexed Days 1–7)
+        // Helper to map hour24 to Shul mode hour string / display value
+        function hour24ToShulHour(hour24) {
+            const halfHour = hour24 % 12;
+            if (halfHour <= 5) {
+                return halfHour + 6;
+            } else {
+                return halfHour - 5;
+            }
+        }
+
+        function shulHourToHour24(shulHour, isNight) {
+            let half;
+            if (shulHour >= 6 && shulHour <= 11) {
+                half = shulHour - 6;
+            } else if (shulHour === 12) {
+                half = 6;
+            } else { // 1..5
+                half = shulHour + 5;
+            }
+            return isNight ? half : half + 12;
+        }
+
         function chelekToTimeComponents(totalChelek) {
             let normalized = totalChelek % CHALAKIM_PER_WEEK;
             if (normalized < 0) normalized += CHALAKIM_PER_WEEK;
 
             const zeroBasedDay = Math.floor(normalized / CHALAKIM_PER_DAY);
-            const day1Based = zeroBasedDay + 1; // 1 to 7
+            const day1Based = zeroBasedDay + 1;
 
             const remainderDay = normalized % CHALAKIM_PER_DAY;
             const hour24 = Math.floor(remainderDay / CHALAKIM_PER_HOUR);
-            const chelek = remainderDay % CHALAKIM_PER_HOUR;
+            const chelekInHour = remainderDay % CHALAKIM_PER_HOUR;
+
+            const minute = Math.floor(chelekInHour / CHALAKIM_PER_MINUTE);
+            const chelekInMinute = chelekInHour % CHALAKIM_PER_MINUTE;
 
             const isNight = hour24 < 12;
             const hour12 = (hour24 % 12) === 0 ? 12 : (hour24 % 12);
+            const shulHour = hour24ToShulHour(hour24);
 
             return {
                 day: day1Based,
                 zeroBasedDay,
                 hour24,
                 hour12,
+                shulHour,
                 isNight,
-                chelek,
+                minute,
+                chelekInMinute,
+                chelekInHour,
                 rawNormalized: normalized
             };
         }
 
-        function calculateSumTotal() {
-            const sign = state.isAddMode ? 1 : -1;
-            return state.mainChelekTotal + (sign * state.offsetChelek);
+        function calculateSubtotalChelek() {
+            return state.offsetChelek * state.multiplier;
         }
 
-        // CANVAS RESIZING & HIGH DPI HANDLING
+        function calculateSumTotal() {
+            const sign = state.isAddMode ? 1 : -1;
+            return state.mainChelekTotal + (sign * calculateSubtotalChelek());
+        }
+
         function resizeCanvas() {
             const rect = container.getBoundingClientRect();
             const dpr = window.devicePixelRatio || 1;
@@ -373,7 +699,6 @@
             renderWheel();
         }
 
-        // RENDER LOGIC
         function renderWheel() {
             const rect = container.getBoundingClientRect();
             const width = rect.width;
@@ -387,22 +712,11 @@
             ctx.clearRect(0, 0, width, height);
             ctx.save();
 
-            // Background subtle grid/stars
             drawCanvasBackground(width, height);
-
-            // Draw Shaded Sector (Between Main Time & Sum Time)
             drawShadedSector(centerX, centerY, radius);
-
-            // Render Wheel Layers
             drawWheelRings(centerX, centerY, radius);
-
-            // Render Ticks & Labels (including Chalakim & Outer Hour labels)
             drawWheelTicksAndLabels(centerX, centerY, radius);
-
-            // Render Hands (Extended all the way to the outer Chalakim track edge)
             drawTimeHands(centerX, centerY, radius);
-
-            // Render Off-Screen Directional Indicator if clock is panned out
             drawOffScreenIndicator(width, height, centerX, centerY, radius);
 
             ctx.restore();
@@ -472,17 +786,14 @@
 
         function drawWheelRings(cx, cy, r) {
             const outerR = r;
-            const dayRingR = r * 0.82;
             const hourRingR = r * 0.68;
 
-            // 1. Draw 7 Main Day Segments with CONSISTENT Day/Night Colors
             for (let d = 0; d < 7; d++) {
-                const day1Num = d + 1; // 1..7
+                const day1Num = d + 1;
                 const startAngle = (d / 7) * Math.PI * 2 - Math.PI / 2;
                 const endAngle = ((d + 1) / 7) * Math.PI * 2 - Math.PI / 2;
                 const midAngle = startAngle + (endAngle - startAngle) / 2;
 
-                // Segment Divider Line
                 ctx.save();
                 ctx.beginPath();
                 ctx.moveTo(cx, cy);
@@ -492,10 +803,10 @@
                 ctx.stroke();
                 ctx.restore();
 
-                // CONSISTENT Night Segment Half (First 12h) - Dark Indigo Blue
+                // Extended Night Halves out to outer edge (r)
                 ctx.save();
                 ctx.beginPath();
-                ctx.arc(cx, cy, dayRingR, startAngle, midAngle);
+                ctx.arc(cx, cy, outerR, startAngle, midAngle);
                 ctx.arc(cx, cy, hourRingR, midAngle, startAngle, true);
                 ctx.closePath();
                 ctx.fillStyle = 'rgba(30, 27, 75, 0.85)';
@@ -504,10 +815,10 @@
                 ctx.stroke();
                 ctx.restore();
 
-                // CONSISTENT Day Segment Half (Second 12h) - Golden Yellow
+                // Extended Day Halves out to outer edge (r)
                 ctx.save();
                 ctx.beginPath();
-                ctx.arc(cx, cy, dayRingR, midAngle, endAngle);
+                ctx.arc(cx, cy, outerR, midAngle, endAngle);
                 ctx.arc(cx, cy, hourRingR, endAngle, midAngle, true);
                 ctx.closePath();
                 ctx.fillStyle = 'rgba(245, 158, 11, 0.15)';
@@ -516,10 +827,9 @@
                 ctx.stroke();
                 ctx.restore();
 
-                // Inner Day Title Labels
                 if (state.zoom > 0.3) {
                     const labelAngle = startAngle + (endAngle - startAngle) / 2;
-                    const labelR = outerR * 0.75;
+                    const labelR = outerR * 0.5;
                     const lx = cx + Math.cos(labelAngle) * labelR;
                     const ly = cy + Math.sin(labelAngle) * labelR;
 
@@ -529,25 +839,19 @@
                     ctx.textBaseline = 'middle';
                     ctx.font = `bold ${Math.max(10, Math.min(16, 13 * Math.sqrt(state.zoom)))}px Cinzel, serif`;
                     ctx.fillStyle = '#f59e0b';
-                    ctx.fillText(`Day ${day1Num} (${DAY_NAMES_1_INDEXED[day1Num].en})`, 0, -6);
+                    ctx.fillText(`Day ${day1Num} (${DAY_NAMES_ENGLISH[day1Num].en})`, 0, -6);
                     ctx.font = `${Math.max(9, Math.min(13, 11 * Math.sqrt(state.zoom)))}px Inter, sans-serif`;
                     ctx.fillStyle = '#cbd5e1';
-                    ctx.fillText(DAY_NAMES_1_INDEXED[day1Num].he, 0, 8);
+                    ctx.fillText(DAY_NAMES_ENGLISH[day1Num].en, 0, 8);
                     ctx.restore();
                 }
             }
 
-            // Outer Base Ring Borders
             ctx.save();
             ctx.beginPath();
             ctx.arc(cx, cy, outerR, 0, Math.PI * 2);
             ctx.strokeStyle = '#475569';
             ctx.lineWidth = 2;
-            ctx.stroke();
-
-            ctx.beginPath();
-            ctx.arc(cx, cy, dayRingR, 0, Math.PI * 2);
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
             ctx.stroke();
 
             ctx.beginPath();
@@ -559,10 +863,9 @@
 
         function drawWheelTicksAndLabels(cx, cy, r) {
             const outerR = r;
-            const hourRingR = r * 0.84; // Positioned close to the outer edge near Chalakim
+            const hourRingR = r * 0.84;
             const totalHours = 7 * 24;
 
-            // 1. HOUR TICKS & HOUR LINES FROM CENTER TO EDGE (at Zoom >= 4)
             for (let h = 0; h < totalHours; h++) {
                 const hourAngle = (h / totalHours) * Math.PI * 2 - Math.PI / 2;
                 const cos = Math.cos(hourAngle);
@@ -571,8 +874,8 @@
                 const hour24 = h % 24;
                 const isNight = hour24 < 12;
                 const hour12 = (hour24 % 12) === 0 ? 12 : (hour24 % 12);
+                const displayHour = state.isShulMode ? hour24ToShulHour(hour24) : hour24;
 
-                // Feature: Hour lines visible from center to edge at Zoom >= 4
                 if (state.zoom >= 4.0) {
                     ctx.save();
                     ctx.beginPath();
@@ -583,7 +886,6 @@
                     ctx.stroke();
                     ctx.restore();
                 } else {
-                    // Regular Hour Divider Tick
                     ctx.save();
                     ctx.beginPath();
                     ctx.moveTo(cx + cos * hourRingR, cy + sin * hourRingR);
@@ -594,9 +896,8 @@
                     ctx.restore();
                 }
 
-                // HOUR LABELS CLOSE TO CHALAKIM TRACK
                 if (state.zoom >= 0.7) {
-                    const labelR = hourRingR - 12; // Just inside the Chalakim track
+                    const labelR = hourRingR - 12;
                     const lx = cx + cos * labelR;
                     const ly = cy + sin * labelR;
 
@@ -609,50 +910,53 @@
                     ctx.font = `${fontSize}px JetBrains Mono, monospace`;
                     ctx.fillStyle = isNight ? '#a5b4fc' : '#fef08a';
                     
+                    const suffix = isNight ? 'n' : 'd';
                     if (state.zoom > 1.4) {
-                        ctx.fillText(`H${hour24}`, 0, -4);
+                        ctx.fillText(`H${displayHour}`, 0, -4);
                         ctx.font = `${fontSize - 2}px Inter, sans-serif`;
                         ctx.fillStyle = '#94a3b8';
-                        ctx.fillText(`(${hour12}${isNight ? 'n' : 'd'})`, 0, 6);
+                        ctx.fillText(`(${hour12}${suffix})`, 0, 6);
                     } else {
-                        ctx.fillText(`${hour24}`, 0, 0);
+                        ctx.fillText(`H${displayHour}`, 0, 0);
                     }
                     ctx.restore();
                 }
 
-                // 2. CHALAKIM TICKS ON OUTERMOST RING (STAGGERED MULTI-TIER RULER)
-                drawHourChalakimTicksOnOuterRing(cx, cy, outerR, h);
+                if (state.isShulMode) {
+                    drawShulHourTicksAndLabels(cx, cy, outerR, h);
+                } else {
+                    drawHourChalakimTicksOnOuterRing(cx, cy, outerR, h);
+                }
             }
         }
 
-        function drawHourChalakimTicksOnOuterRing(cx, cy, outerR, hourIndex) {
+        // Shul Mode tick division with 'm' instead of minute
+        function drawShulHourTicksAndLabels(cx, cy, outerR, hourIndex) {
             const startChelek = hourIndex * CHALAKIM_PER_HOUR;
             const anglePerChelek = (Math.PI * 2) / CHALAKIM_PER_WEEK;
 
-            // DYNAMICALLY FILTER TICKS AND NUMBERS BASED ON ZOOM SCALE TO PREVENT OVERLAP
-            let tickStep = 108;       // Default: 10 major ticks per hour
-            let numberStep = 270;     // Default: 4 numbers per hour (0, 270, 540, 810)
+            if (state.zoom < 3.0) return;
 
-            if (state.zoom < 0.6) {
-                tickStep = 540;
-                numberStep = 0; // Hide numbers when fully zoomed out
-            } else if (state.zoom >= 0.6 && state.zoom < 1.5) {
-                tickStep = 108;
-                numberStep = 270;
-            } else if (state.zoom >= 1.5 && state.zoom < 4.0) {
-                tickStep = 54;
-                numberStep = 108;
-            } else if (state.zoom >= 4.0 && state.zoom < 12.0) {
+            let tickStep = 18;
+            let numberStep = 0;
+
+            if (state.zoom >= 2000.0) {
+                tickStep = 1;
+                numberStep = 1;
+            } else if (state.zoom >= 3.0 && state.zoom < 14.0) {
                 tickStep = 18;
-                numberStep = 54;
-            } else if (state.zoom >= 12.0 && state.zoom < 40.0) {
+                numberStep = 0;
+            } else if (state.zoom >= 14.0 && state.zoom < 15.0) {
+                tickStep = 18;
+                numberStep = 18;
+            } else if (state.zoom >= 15.0 && state.zoom < 150.0) {
                 tickStep = 6;
                 numberStep = 18;
-            } else if (state.zoom >= 40.0 && state.zoom < 120.0) {
-                tickStep = 2;
+            } else if (state.zoom >= 150.0 && state.zoom < 500.0) {
+                tickStep = 1;
                 numberStep = 6;
-            } else if (state.zoom >= 120.0) {
-                tickStep = 1; // Render ALL individual 1,080 ticks & numbers at extreme zoom
+            } else if (state.zoom >= 500.0) {
+                tickStep = 1;
                 numberStep = 1;
             }
 
@@ -662,10 +966,10 @@
                 const cos = Math.cos(angle);
                 const sin = Math.sin(angle);
 
-                const isMajor = (c % 108 === 0);
-                const isMid = (c % 18 === 0);
+                const isMinuteTick = (c % 18 === 0);
+                const isDiv6 = (c % 6 === 0);
 
-                const tickLen = isMajor ? 14 : (isMid ? 8 : 4);
+                const tickLen = isMinuteTick ? 14 : (isDiv6 ? 9 : 4);
                 const r1 = outerR;
                 const r2 = outerR + tickLen; 
 
@@ -673,17 +977,12 @@
                 ctx.beginPath();
                 ctx.moveTo(cx + cos * r1, cy + sin * r1);
                 ctx.lineTo(cx + cos * r2, cy + sin * r2);
-                ctx.strokeStyle = isMajor ? '#06b6d4' : (isMid ? 'rgba(6, 182, 212, 0.6)' : 'rgba(255, 255, 255, 0.3)');
-                ctx.lineWidth = isMajor ? 1.8 : 0.8;
+                ctx.strokeStyle = isMinuteTick ? '#06b6d4' : (isDiv6 ? 'rgba(6, 182, 212, 0.7)' : 'rgba(255, 255, 255, 0.4)');
+                ctx.lineWidth = isMinuteTick ? 1.8 : 0.9;
                 ctx.stroke();
 
-                // Dynamic Staggered Labels to prevent overlapping
-                if (numberStep > 0 && (c % numberStep === 0)) {
+                if (numberStep > 0 && (c % numberStep === 0 || state.zoom >= 2000.0)) {
                     let labelRadiusOffset = tickLen + 8;
-                    if (!isMajor && ((c / numberStep) % 2 === 1)) {
-                        labelRadiusOffset += 10; // Stagger alternating numbers outward
-                    }
-
                     const labelR = outerR + labelRadiusOffset;
                     const lx = cx + cos * labelR;
                     const ly = cy + sin * labelR;
@@ -692,9 +991,88 @@
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     
-                    const fontPx = Math.min(12, Math.max(8, 7 * Math.pow(state.zoom, 0.3)));
+                    const fontPx = Math.min(12, Math.max(8, 7 * Math.pow(state.zoom, 0.2)));
                     ctx.font = `${fontPx}px JetBrains Mono, monospace`;
-                    ctx.fillStyle = isMajor ? '#06b6d4' : '#cbd5e1';
+                    ctx.fillStyle = isMinuteTick ? '#06b6d4' : '#cbd5e1';
+
+                    const m = Math.floor(c / CHALAKIM_PER_MINUTE);
+                    const remC = c % CHALAKIM_PER_MINUTE;
+
+                    if (remC === 0) {
+                        ctx.fillText(`${m}m`, 0, 0);
+                    } else {
+                        ctx.fillText(`${remC}c`, 0, 0);
+                    }
+                }
+                ctx.restore();
+            }
+        }
+
+        function drawHourChalakimTicksOnOuterRing(cx, cy, outerR, hourIndex) {
+            const startChelek = hourIndex * CHALAKIM_PER_HOUR;
+            const anglePerChelek = (Math.PI * 2) / CHALAKIM_PER_WEEK;
+
+            if (state.zoom < 3.0) return;
+
+            let tickStep = 180;
+            let numberStep = 0;
+
+            if (state.zoom >= 2000.0) {
+                tickStep = 1;
+                numberStep = 1;
+            } else if (state.zoom >= 3.0 && state.zoom < 14.0) {
+                tickStep = 180;
+                numberStep = 0;
+            } else if (state.zoom >= 14.0 && state.zoom < 15.0) {
+                tickStep = 180;
+                numberStep = 180;
+            } else if (state.zoom >= 15.0 && state.zoom < 150.0) {
+                tickStep = 18;
+                numberStep = 180;
+            } else if (state.zoom >= 150.0 && state.zoom < 500.0) {
+                tickStep = 6;
+                numberStep = 18;
+            } else if (state.zoom >= 500.0) {
+                tickStep = 1;
+                numberStep = 6;
+            }
+
+            for (let c = 0; c < CHALAKIM_PER_HOUR; c += tickStep) {
+                const totalC = startChelek + c;
+                const angle = (totalC * anglePerChelek) - Math.PI / 2;
+                const cos = Math.cos(angle);
+                const sin = Math.sin(angle);
+
+                const isDiv1 = (c % 180 === 0);
+                const isDiv2 = (c % 18 === 0);
+                const isDiv3 = (c % 6 === 0);
+
+                const tickLen = isDiv1 ? 14 : (isDiv2 ? 9 : (isDiv3 ? 6 : 4));
+                const r1 = outerR;
+                const r2 = outerR + tickLen; 
+
+                ctx.save();
+                ctx.beginPath();
+                ctx.moveTo(cx + cos * r1, cy + sin * r1);
+                ctx.lineTo(cx + cos * r2, cy + sin * r2);
+                ctx.strokeStyle = isDiv1 ? '#06b6d4' : (isDiv2 ? 'rgba(6, 182, 212, 0.7)' : 'rgba(255, 255, 255, 0.4)');
+                ctx.lineWidth = isDiv1 ? 1.8 : 0.9;
+                ctx.stroke();
+
+                if (numberStep > 0 && (c % numberStep === 0 || state.zoom >= 2000.0)) {
+                    let labelRadiusOffset = tickLen + 8;
+                    const labelR = outerR + labelRadiusOffset;
+                    const lx = cx + cos * labelR;
+                    const ly = cy + sin * labelR;
+
+                    ctx.translate(lx, ly);
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    
+                    const fontPx = Math.min(12, Math.max(8, 7 * Math.pow(state.zoom, 0.2)));
+                    ctx.font = `${fontPx}px JetBrains Mono, monospace`;
+                    ctx.fillStyle = isDiv1 ? '#06b6d4' : '#cbd5e1';
+
                     ctx.fillText(`${c}c`, 0, 0);
                 }
                 ctx.restore();
@@ -702,18 +1080,15 @@
         }
 
         function drawTimeHands(cx, cy, r) {
-            // MAIN TIME HAND (Gold) - Reaches all the way to outer edge (1.02 * r)
             const mainAngle = chelekToAngle(state.mainChelekTotal);
             drawPointerHand(cx, cy, mainAngle, r * 1.02, '#f59e0b', '#fbbf24', 'MAIN TIME', true);
 
-            // SUM TIME HAND (Cyan/Red) - Reaches all the way to outer edge (1.02 * r)
             const sumTotal = calculateSumTotal();
             const sumAngle = chelekToAngle(sumTotal);
             const sumColor = state.isAddMode ? '#06b6d4' : '#f87171';
             const sumGlow = state.isAddMode ? '#38bdf8' : '#fca5a5';
             drawPointerHand(cx, cy, sumAngle, r * 1.02, sumColor, sumGlow, 'SUM RESULT', false);
 
-            // Center Hub / Pivot Cap
             ctx.save();
             ctx.beginPath();
             ctx.arc(cx, cy, 8, 0, Math.PI * 2);
@@ -740,7 +1115,6 @@
             ctx.shadowColor = glowColor;
             ctx.shadowBlur = 10;
 
-            // Main Line Vector extending out to Chalakim edge
             ctx.beginPath();
             ctx.moveTo(cx, cy);
             ctx.lineTo(tipX, tipY);
@@ -748,7 +1122,6 @@
             ctx.lineWidth = isMain ? 3.5 : 2.5;
             ctx.stroke();
 
-            // Arrow Head
             const headLen = isMain ? 14 : 10;
             const arrowAngle1 = angle + Math.PI - 0.35;
             const arrowAngle2 = angle + Math.PI + 0.35;
@@ -761,7 +1134,6 @@
             ctx.fillStyle = color;
             ctx.fill();
 
-            // Interactive Drag Target Ring
             ctx.beginPath();
             ctx.arc(tipX, tipY, isMain ? 7 : 5, 0, Math.PI * 2);
             ctx.fillStyle = color;
@@ -773,12 +1145,10 @@
             ctx.restore();
         }
 
-        // OFF-SCREEN DIRECTION INDICATOR ARROW
         function drawOffScreenIndicator(w, h, cx, cy, r) {
             const margin = 40;
-            // Check if clock center is off-screen
             if (cx >= -r/2 && cx <= w + r/2 && cy >= -r/2 && cy <= h + r/2) {
-                return; // Clock is visible in viewport
+                return;
             }
 
             const dx = cx - w / 2;
@@ -786,12 +1156,10 @@
             const distance = Math.hypot(dx, dy);
             const angle = Math.atan2(dy, dx);
 
-            // Dynamic Arrow Size: Shrinks as clock gets further away
             const maxDistance = 3000;
             const sizeFactor = Math.max(0.3, 1 - Math.min(distance / maxDistance, 0.7));
             const arrowSize = 24 * sizeFactor;
 
-            // Clamp arrow position to canvas border
             const edgeX = Math.max(margin, Math.min(w - margin, w / 2 + Math.cos(angle) * (w / 2 - margin)));
             const edgeY = Math.max(margin, Math.min(h - margin, h / 2 + Math.sin(angle) * (h / 2 - margin)));
 
@@ -799,7 +1167,6 @@
             ctx.translate(edgeX, edgeY);
             ctx.rotate(angle);
 
-            // Draw Pointer Arrow
             ctx.beginPath();
             ctx.moveTo(arrowSize, 0);
             ctx.lineTo(-arrowSize, -arrowSize * 0.6);
@@ -818,41 +1185,98 @@
             ctx.restore();
         }
 
-        // SYNCHRONIZATION: STATE <-> UI CONTROLS
         function updateUIFromState() {
             const mainComp = chelekToTimeComponents(state.mainChelekTotal);
 
-            // Update Main Controls & Sublabels (Day 1..7)
             mainDayInput.value = mainComp.day;
-            const dayObj = DAY_NAMES_1_INDEXED[mainComp.day];
-            mainDayNameBadge.textContent = `Day ${mainComp.day} (${dayObj.short})`;
-            mainDaySubLabel.textContent = `${dayObj.he} / ${dayObj.en}`;
+            const dayObj = DAY_NAMES_ENGLISH[mainComp.day];
+            mainDaySubLabel.textContent = `${dayObj.en}`;
 
-            mainHour24Input.value = mainComp.hour24;
-            mainHourSubLabel.textContent = `${mainComp.isNight ? 'Night' : 'Day'} Hour ${mainComp.hour12}`;
+            if (state.isShulMode) {
+                lblMainHour.textContent = `${mainComp.isNight ? 'Night' : 'Day'} Hour`;
+                lblSumHour.textContent = "Hour";
+                mainHour24Input.value = mainComp.shulHour;
+                mainHourSubLabel.textContent = `${mainComp.isNight ? 'Night' : 'Day'} Hour ${mainComp.shulHour}`;
 
-            mainChelekInput.value = mainComp.chelek;
+                mainMinuteBox.classList.remove('hidden');
+                addMinuteBox.classList.remove('hidden');
+                subtotalMinBox.classList.remove('hidden');
+                sumMinuteBox.classList.remove('hidden');
 
-            // Half / Relative Badge
-            mainHalfText.textContent = mainComp.isNight ? `Night (${mainComp.hour12})` : `Day (${mainComp.hour12})`;
-            mainHalfText.className = mainComp.isNight ? 'font-medium text-indigo-400' : 'font-medium text-amber-400';
-            mainHalf12Text.textContent = `(${mainComp.hour12}/12)`;
+                mainInputsGrid.className = "grid grid-cols-4 gap-2";
+                addInputsGrid.className = "grid grid-cols-4 gap-2 mb-3";
+                subtotalGrid.className = "grid grid-cols-4 gap-2 font-mono text-center";
+                sumOutputsGrid.className = "grid grid-cols-4 gap-2 font-mono";
+
+                lblMainChelek.textContent = "Chelek (0–17)";
+                mainChelekSubLabel.textContent = "/ 18 c";
+                mainMinuteInput.value = mainComp.minute;
+                mainChelekInput.value = mainComp.chelekInMinute;
+            } else {
+                lblMainHour.textContent = "Hour (0–23)";
+                lblSumHour.textContent = "Hour (24h)";
+                mainHour24Input.value = mainComp.hour24;
+                mainHourSubLabel.textContent = `${mainComp.isNight ? 'Night' : 'Day'} Hour ${mainComp.hour12}`;
+
+                mainMinuteBox.classList.add('hidden');
+                addMinuteBox.classList.add('hidden');
+                subtotalMinBox.classList.add('hidden');
+                sumMinuteBox.classList.add('hidden');
+
+                mainInputsGrid.className = "grid grid-cols-3 gap-2";
+                addInputsGrid.className = "grid grid-cols-3 gap-2 mb-3";
+                subtotalGrid.className = "grid grid-cols-3 gap-2 font-mono text-center";
+                sumOutputsGrid.className = "grid grid-cols-3 gap-2 font-mono";
+
+                lblMainChelek.textContent = "Chelek (0–1079)";
+                mainChelekSubLabel.textContent = "/ 1080 c";
+                mainChelekInput.value = mainComp.chelekInHour;
+            }
 
             mainTotalChelekDisplay.textContent = `${state.mainChelekTotal.toLocaleString()} / 181,440`;
 
-            // Update Sum Display
+            multiplierInput.value = state.multiplier;
+            const subtotalChelek = calculateSubtotalChelek();
+            const subtotalDays = Math.floor(subtotalChelek / CHALAKIM_PER_DAY);
+            const subtotalRemChelek = subtotalChelek % CHALAKIM_PER_DAY;
+            const subtotalHours = Math.floor(subtotalRemChelek / CHALAKIM_PER_HOUR);
+            const subtotalFinalChelekInHour = subtotalRemChelek % CHALAKIM_PER_HOUR;
+
+            subtotalDaysText.textContent = `${subtotalDays}d`;
+            subtotalHoursText.textContent = `${subtotalHours}h`;
+
+            if (state.isShulMode) {
+                const subMin = Math.floor(subtotalFinalChelekInHour / CHALAKIM_PER_MINUTE);
+                const subC = subtotalFinalChelekInHour % CHALAKIM_PER_MINUTE;
+                subtotalMinText.textContent = `${subMin}m`;
+                subtotalChelekText.textContent = `${subC}c`;
+            } else {
+                subtotalChelekText.textContent = `${subtotalFinalChelekInHour}c`;
+            }
+
             const sumTotal = calculateSumTotal();
             const sumComp = chelekToTimeComponents(sumTotal);
+            const sumDayObj = DAY_NAMES_ENGLISH[sumComp.day];
 
-            sumDayText.textContent = `${DAY_NAMES_1_INDEXED[sumComp.day].full}`;
-            sumDayNumText.textContent = `Day ${sumComp.day}`;
-            sumHourText.textContent = `${String(sumComp.hour24).padStart(2, '0')}:00 (${sumComp.hour12} ${sumComp.isNight ? 'Night' : 'Day'})`;
-            sumChelekText.textContent = `${sumComp.chelek}c`;
+            sumDayNumText.textContent = `${sumComp.day}`;
+            sumDaySubText.textContent = `${sumDayObj.en}`;
 
-            // Wrap count calculation
+            if (state.isShulMode) {
+                sumHourText.textContent = `${sumComp.isNight ? 'Night' : 'Day'} ${sumComp.shulHour}`;
+                sumMinuteText.textContent = `${sumComp.minute}m`;
+                sumChelekText.textContent = `${sumComp.chelekInMinute}c`;
+            } else {
+                sumHourText.textContent = `${String(sumComp.hour24).padStart(2, '0')}:00`;
+                sumChelekText.textContent = `${sumComp.chelekInHour}c`;
+            }
+
+            let normalizedSum = sumTotal % CHALAKIM_PER_WEEK;
+            if (normalizedSum < 0) normalizedSum += CHALAKIM_PER_WEEK;
+            sumTotalChelekDisplay.textContent = `${normalizedSum.toLocaleString()} / 181,440`;
+
             const rawSum = state.isAddMode ? 
-                (state.mainChelekTotal + state.offsetChelek) : 
-                (state.mainChelekTotal - state.offsetChelek);
+                (state.mainChelekTotal + subtotalChelek) : 
+                (state.mainChelekTotal - subtotalChelek);
 
             const wrapCycles = Math.floor(rawSum / CHALAKIM_PER_WEEK);
             if (wrapCycles !== 0) {
@@ -866,19 +1290,25 @@
             renderWheel();
         }
 
-        // AUTO-WRAPPING CASCADING ARITHMETIC
-        function setMainTimeFromComponents(day1Based, hour24, chelek) {
-            // Cascade wrap arithmetic for Chalakim
-            while (chelek >= CHALAKIM_PER_HOUR) {
-                chelek -= CHALAKIM_PER_HOUR;
+        function setMainTimeFromComponents(day1Based, hourVal, chelekVal, minuteVal = 0) {
+            let hour24 = hourVal;
+            let totalChelekInHour = chelekVal;
+
+            if (state.isShulMode) {
+                const currentIsNight = (chelekToTimeComponents(state.mainChelekTotal).isNight);
+                hour24 = shulHourToHour24(hourVal, currentIsNight);
+                totalChelekInHour = (minuteVal * CHALAKIM_PER_MINUTE) + chelekVal;
+            }
+
+            while (totalChelekInHour >= CHALAKIM_PER_HOUR) {
+                totalChelekInHour -= CHALAKIM_PER_HOUR;
                 hour24 += 1;
             }
-            while (chelek < 0) {
-                chelek += CHALAKIM_PER_HOUR;
+            while (totalChelekInHour < 0) {
+                totalChelekInHour += CHALAKIM_PER_HOUR;
                 hour24 -= 1;
             }
 
-            // Cascade wrap arithmetic for Hours
             while (hour24 >= HOURS_PER_DAY) {
                 hour24 -= HOURS_PER_DAY;
                 day1Based += 1;
@@ -888,77 +1318,90 @@
                 day1Based -= 1;
             }
 
-            // Cascade wrap arithmetic for Days (1..7)
             while (day1Based > DAYS_PER_WEEK) day1Based -= DAYS_PER_WEEK;
             while (day1Based < 1) day1Based += DAYS_PER_WEEK;
 
             const zeroBasedDay = day1Based - 1;
-            state.mainChelekTotal = (zeroBasedDay * CHALAKIM_PER_DAY) + (hour24 * CHALAKIM_PER_HOUR) + chelek;
+            state.mainChelekTotal = (zeroBasedDay * CHALAKIM_PER_DAY) + (hour24 * CHALAKIM_PER_HOUR) + totalChelekInHour;
             updateUIFromState();
         }
 
-        function setOffsetFromComponents(days, hours, chelek) {
-            // Auto wrap duration components
-            while (chelek >= CHALAKIM_PER_HOUR) {
-                chelek -= CHALAKIM_PER_HOUR;
-                hours += 1;
-            }
-            while (chelek < 0 && (hours > 0 || days > 0)) {
-                chelek += CHALAKIM_PER_HOUR;
-                hours -= 1;
-            }
-            while (hours >= HOURS_PER_DAY) {
-                hours -= HOURS_PER_DAY;
-                days += 1;
-            }
-            while (hours < 0 && days > 0) {
-                hours += HOURS_PER_DAY;
-                days -= 1;
-            }
+        function setOffsetFromComponents(days, hours, chelekVal, minutesVal = 0) {
+            let totalInChelek = (days * CHALAKIM_PER_DAY) + (hours * CHALAKIM_PER_HOUR) + (minutesVal * CHALAKIM_PER_MINUTE) + chelekVal;
+            if (totalInChelek < 0) totalInChelek = 0;
 
-            days = Math.max(0, days);
-            hours = Math.max(0, hours);
-            chelek = Math.max(0, chelek);
+            days = Math.floor(totalInChelek / CHALAKIM_PER_DAY);
+            let rem = totalInChelek % CHALAKIM_PER_DAY;
+            hours = Math.floor(rem / CHALAKIM_PER_HOUR);
+            rem %= CHALAKIM_PER_HOUR;
+
+            let mins = Math.floor(rem / CHALAKIM_PER_MINUTE);
+            let chelek = rem % CHALAKIM_PER_MINUTE;
 
             addDaysInput.value = days;
             addHoursInput.value = hours;
-            addChelekInput.value = chelek;
+            addMinuteInput.value = mins;
+            addChelekInput.value = state.isShulMode ? chelek : rem;
 
-            state.offsetChelek = (days * CHALAKIM_PER_DAY) + (hours * CHALAKIM_PER_HOUR) + chelek;
+            state.offsetChelek = totalInChelek;
             updateUIFromState();
         }
 
         function updateMainStateFromInputs() {
             const day = parseInt(mainDayInput.value, 10) || 1;
             const hour = parseInt(mainHour24Input.value, 10) || 0;
+            const min = parseInt(mainMinuteInput.value, 10) || 0;
             const chelek = parseInt(mainChelekInput.value, 10) || 0;
-            setMainTimeFromComponents(day, hour, chelek);
+            setMainTimeFromComponents(day, hour, chelek, min);
         }
 
         function updateOffsetStateFromInputs() {
             const days = parseInt(addDaysInput.value, 10) || 0;
             const hours = parseInt(addHoursInput.value, 10) || 0;
+            const mins = parseInt(addMinuteInput.value, 10) || 0;
             const chelek = parseInt(addChelekInput.value, 10) || 0;
-            setOffsetFromComponents(days, hours, chelek);
+            setOffsetFromComponents(days, hours, chelek, mins);
         }
 
-        // EVENT LISTENERS & INTERACTION HANDLERS
+        function updateMultiplierFromInput() {
+            const mult = parseInt(multiplierInput.value, 10);
+            state.multiplier = isNaN(mult) || mult < 1 ? 1 : mult;
+            updateUIFromState();
+        }
+
         function setupEventListeners() {
             window.addEventListener('resize', resizeCanvas);
 
-            // Input Event Listeners
+            // Mode Toggle Listeners
+            btnModeRishonim.addEventListener('click', () => {
+                state.isShulMode = false;
+                btnModeRishonim.className = "px-2.5 py-1 rounded-md text-amber-400 bg-slate-800 border border-slate-700 shadow-sm transition";
+                btnModeShul.className = "px-2.5 py-1 rounded-md text-slate-400 hover:text-slate-200 transition";
+                updateUIFromState();
+            });
+
+            btnModeShul.addEventListener('click', () => {
+                state.isShulMode = true;
+                btnModeShul.className = "px-2.5 py-1 rounded-md text-amber-400 bg-slate-800 border border-slate-700 shadow-sm transition";
+                btnModeRishonim.className = "px-2.5 py-1 rounded-md text-slate-400 hover:text-slate-200 transition";
+                updateUIFromState();
+            });
+
             mainDayInput.addEventListener('change', updateMainStateFromInputs);
             mainHour24Input.addEventListener('change', updateMainStateFromInputs);
+            mainMinuteInput.addEventListener('change', updateMainStateFromInputs);
             mainChelekInput.addEventListener('change', updateMainStateFromInputs);
 
             addDaysInput.addEventListener('change', updateOffsetStateFromInputs);
             addHoursInput.addEventListener('change', updateOffsetStateFromInputs);
+            addMinuteInput.addEventListener('change', updateOffsetStateFromInputs);
             addChelekInput.addEventListener('change', updateOffsetStateFromInputs);
 
-            // Drag-to-change for numeric input fields
+            multiplierInput.addEventListener('change', updateMultiplierFromInput);
+            multiplierInput.addEventListener('input', updateMultiplierFromInput);
+
             setupInputDragListeners();
 
-            // Mode Toggle
             btnModeAdd.addEventListener('click', () => {
                 state.isAddMode = true;
                 btnModeAdd.className = "px-2.5 py-1 rounded-md text-cyan-400 bg-slate-800 border border-slate-700 shadow-sm transition";
@@ -973,17 +1416,14 @@
                 updateUIFromState();
             });
 
-            // Baharad Button: Day 2, 5 Hours, 204 Chalakim (with Hebrew בהר"ד label)
             btnBaharad.addEventListener('click', () => {
-                setMainTimeFromComponents(2, 5, 204);
+                setMainTimeFromComponents(2, 5, 204, 0);
             });
 
-            // Molad Preset: 29 days 12 hours 793 chalakim
             presetMolad.addEventListener('click', () => {
-                setOffsetFromComponents(29, 12, 793);
+                setOffsetFromComponents(29, 12, 793, 0);
             });
 
-            // Feature: Copy Sum to Main Time Button
             btnCopySumToMain.addEventListener('click', () => {
                 const sumTotal = calculateSumTotal();
                 state.mainChelekTotal = sumTotal % CHALAKIM_PER_WEEK;
@@ -991,7 +1431,6 @@
                 updateUIFromState();
             });
 
-            // Zoom Controls
             document.getElementById('btnZoomIn').addEventListener('click', () => {
                 zoomCanvas(1.4, container.clientWidth / 2, container.clientHeight / 2);
             });
@@ -1007,7 +1446,6 @@
                 updateUIFromState();
             });
 
-            // Canvas Mouse Wheel Zoom Anchored at Cursor
             container.addEventListener('wheel', (e) => {
                 e.preventDefault();
                 const rect = container.getBoundingClientRect();
@@ -1018,13 +1456,11 @@
                 zoomCanvas(zoomFactor, mouseX, mouseY);
             }, { passive: false });
 
-            // Pointer Event Handlers
             container.addEventListener('pointerdown', handlePointerDown);
             window.addEventListener('pointermove', handlePointerMove);
             window.addEventListener('pointerup', handlePointerUp);
         }
 
-        // FIXED INPUT DRAGGING USING BASELINE TOTAL CALCULATIONS
         function setupInputDragListeners() {
             const dragInputs = document.querySelectorAll('.drag-input');
             dragInputs.forEach(input => {
@@ -1039,7 +1475,7 @@
                 input.addEventListener('pointermove', (e) => {
                     if (state.activeNumberDragInput === input) {
                         const deltaY = state.dragInputStartY - e.clientY;
-                        const steps = Math.round(deltaY / 4); // Smooth 4px resolution per step change
+                        const steps = Math.round(deltaY / 4);
 
                         if (input.id === 'mainDayInput') {
                             let newTotal = (state.dragBaselineTotal + steps * CHALAKIM_PER_DAY) % CHALAKIM_PER_WEEK;
@@ -1051,22 +1487,32 @@
                             if (newTotal < 0) newTotal += CHALAKIM_PER_WEEK;
                             state.mainChelekTotal = newTotal;
                             updateUIFromState();
+                        } else if (input.id === 'mainMinuteInput') {
+                            let newTotal = (state.dragBaselineTotal + steps * CHALAKIM_PER_MINUTE) % CHALAKIM_PER_WEEK;
+                            if (newTotal < 0) newTotal += CHALAKIM_PER_WEEK;
+                            state.mainChelekTotal = newTotal;
+                            updateUIFromState();
                         } else if (input.id === 'mainChelekInput') {
                             let newTotal = (state.dragBaselineTotal + steps) % CHALAKIM_PER_WEEK;
                             if (newTotal < 0) newTotal += CHALAKIM_PER_WEEK;
                             state.mainChelekTotal = newTotal;
                             updateUIFromState();
-                        } else if (input.id === 'addDaysInput' || input.id === 'addHoursInput' || input.id === 'addChelekInput') {
-                            const targetValue = Math.max(0, state.dragInputInitialValue + steps);
+                        } else if (input.id === 'addDaysInput' || input.id === 'addHoursInput' || input.id === 'addMinuteInput' || input.id === 'addChelekInput') {
                             let d = parseInt(addDaysInput.value, 10) || 0;
                             let h = parseInt(addHoursInput.value, 10) || 0;
+                            let m = parseInt(addMinuteInput.value, 10) || 0;
                             let c = parseInt(addChelekInput.value, 10) || 0;
 
-                            if (input.id === 'addDaysInput') d = targetValue;
-                            if (input.id === 'addHoursInput') h = targetValue;
-                            if (input.id === 'addChelekInput') c = targetValue;
+                            if (input.id === 'addDaysInput') d = state.dragInputInitialValue + steps;
+                            if (input.id === 'addHoursInput') h = state.dragInputInitialValue + steps;
+                            if (input.id === 'addMinuteInput') m = state.dragInputInitialValue + steps;
+                            if (input.id === 'addChelekInput') c = state.dragInputInitialValue + steps;
 
-                            setOffsetFromComponents(d, h, c);
+                            setOffsetFromComponents(d, h, c, m);
+                        } else if (input.id === 'multiplierInput') {
+                            const targetValue = Math.max(1, state.dragInputInitialValue + steps);
+                            state.multiplier = targetValue;
+                            updateUIFromState();
                         }
                     }
                 });
@@ -1104,12 +1550,10 @@
             const baseRadius = Math.min(container.clientWidth, container.clientHeight) * 0.38;
             const radius = baseRadius * state.zoom;
 
-            // Check distance to Main Hand Tip (at outer edge 1.02 * r)
             const mainAngle = chelekToAngle(state.mainChelekTotal);
             const mainTipX = cx + Math.cos(mainAngle) * (radius * 1.02);
             const mainTipY = cy + Math.sin(mainAngle) * (radius * 1.02);
 
-            // Check distance to Sum Hand Tip (at outer edge 1.02 * r)
             const sumTotal = calculateSumTotal();
             const sumAngle = chelekToAngle(sumTotal);
             const sumTipX = cx + Math.cos(sumAngle) * (radius * 1.02);
@@ -1150,20 +1594,21 @@
                 if (state.activeHandDrag === 'main') {
                     state.mainChelekTotal = draggedChelek;
                 } else if (state.activeHandDrag === 'sum') {
-                    let diff = draggedChelek - state.mainChelekTotal;
+                    let fullSubtotal = draggedChelek - state.mainChelekTotal;
                     if (state.isAddMode) {
-                        if (diff < 0) diff += CHALAKIM_PER_WEEK;
-                        state.offsetChelek = diff;
+                        if (fullSubtotal < 0) fullSubtotal += CHALAKIM_PER_WEEK;
                     } else {
-                        let subDiff = state.mainChelekTotal - draggedChelek;
-                        if (subDiff < 0) subDiff += CHALAKIM_PER_WEEK;
-                        state.offsetChelek = subDiff;
+                        fullSubtotal = state.mainChelekTotal - draggedChelek;
+                        if (fullSubtotal < 0) fullSubtotal += CHALAKIM_PER_WEEK;
                     }
 
-                    const offsetComp = chelekToTimeComponents(state.offsetChelek);
+                    let unitOffset = Math.round(fullSubtotal / Math.max(1, state.multiplier));
+                    const offsetComp = chelekToTimeComponents(unitOffset);
                     addDaysInput.value = offsetComp.zeroBasedDay;
                     addHoursInput.value = offsetComp.hour24;
-                    addChelekInput.value = offsetComp.chelek;
+                    addMinuteInput.value = offsetComp.minute;
+                    addChelekInput.value = state.isShulMode ? offsetComp.chelekInMinute : offsetComp.chelekInHour;
+                    state.offsetChelek = unitOffset;
                 }
 
                 updateUIFromState();
@@ -1191,13 +1636,14 @@
                 const chelekAtCursor = angleToChelek(angle);
                 const comp = chelekToTimeComponents(chelekAtCursor);
 
-                const dayObj = DAY_NAMES_1_INDEXED[comp.day];
+                const dayObj = DAY_NAMES_ENGLISH[comp.day];
 
-                document.getElementById('tooltipDay').textContent = `Day ${comp.day}: ${dayObj.en} (${dayObj.he})`;
+                document.getElementById('tooltipDay').textContent = `Day ${comp.day}: ${dayObj.en}`;
                 document.getElementById('tooltipDetails').innerHTML = `
                     <div class="text-amber-300 font-semibold">${comp.isNight ? 'Night' : 'Day'} Segment</div>
-                    <div>Hour of Day: <span class="text-white">${comp.hour24}:00</span> (${comp.hour12} ${comp.isNight ? 'Night' : 'Day'})</div>
-                    <div>Chelek: <span class="text-cyan-400">${comp.chelek}</span> / 1080</div>
+                    <div>Hour of Day: <span class="text-white">${state.isShulMode ? `${comp.isNight ? 'Night' : 'Day'} Hour ${comp.shulHour}` : comp.hour24}</span> (${comp.hour12} ${comp.isNight ? 'Night' : 'Day'})</div>
+                    ${state.isShulMode ? `<div>Minute: <span class="text-cyan-300">${comp.minute}</span> / 60</div>` : ''}
+                    <div>Chelek: <span class="text-cyan-400">${state.isShulMode ? comp.chelekInMinute : comp.chelekInHour}</span> / ${state.isShulMode ? '18' : '1080'}</div>
                 `;
 
                 tooltip.style.left = `${mx + 15}px`;
@@ -1208,7 +1654,6 @@
             }
         }
 
-        // INITIALIZATION
         window.onload = () => {
             setupEventListeners();
             resizeCanvas();
